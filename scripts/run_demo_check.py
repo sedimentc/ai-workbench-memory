@@ -28,6 +28,7 @@ REQUIRED_FILES = [
     "10_启动材料/新窗口演示提示词.md",
     "10_启动材料/现场答辩问答.md",
     "10_启动材料/新窗口接手实测记录.md",
+    "dist/index.html",
     "dist/演示包.md",
     "scripts/check_memory_repo.py",
     "scripts/new_proposal.py",
@@ -81,7 +82,7 @@ def main() -> int:
     print("DEMO_READY")
     print(f"repo={ROOT}")
     print(f"latest_commit={output}")
-    print("start_here=演示入口.md")
+    print("start_here=dist/index.html")
     return 0
 
 

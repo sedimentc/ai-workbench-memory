@@ -5,3 +5,4 @@ __pycache__/
 dist/*
 !dist/
 !dist/演示包.md
+!dist/index.html
