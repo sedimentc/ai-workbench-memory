@@ -2,4 +2,6 @@
 *.tmp
 *.bak
 __pycache__/
-
+dist/*
+!dist/
+!dist/演示包.md

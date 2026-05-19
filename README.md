@@ -34,6 +34,7 @@ source: 第一版共享 MD 系统落地
 - `05_待审核/`：所有候选记忆、规则、资源变更先进入这里。
 - `scripts/check_memory_repo.py`：基础自检脚本。
 - `scripts/new_proposal.py`：生成标准待审核提案。
+- `scripts/export_demo_packet.py`：导出单文件演示包。
 - `scripts/run_demo_check.py`：演示前准备检查。
 - `10_启动材料/`：上线步骤、演示脚本、第一周推进清单和验收清单。
 - `10_启动材料/功能对照表.md`：对照刘大、王老师、肖明原始框架。
@@ -57,6 +58,12 @@ python3 scripts/check_memory_repo.py
 
 ```bash
 python3 scripts/run_demo_check.py
+```
+
+导出演示包：
+
+```bash
+python3 scripts/export_demo_packet.py
 ```
 
 新建记忆提案：
