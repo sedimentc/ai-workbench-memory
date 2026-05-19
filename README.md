@@ -28,9 +28,31 @@ source: 第一版共享 MD 系统落地
 - `01_项目/AI工作台/StartPack.md`：AI 工作台项目接手包。
 - `05_待审核/`：所有候选记忆、规则、资源变更先进入这里。
 - `scripts/check_memory_repo.py`：基础自检脚本。
+- `scripts/new_proposal.py`：生成标准待审核提案。
+- `10_启动材料/`：上线步骤、演示脚本、第一周推进清单和验收清单。
 
 ## 分工
 
 陈纪言负责共享 MD 系统底座、项目记忆、AI 入口、资源登记、待审核流程和模板。
 
 肖明负责技能共享库、程序提示词、Skill 效果测试和技能库维护。
+
+## 常用命令
+
+自检：
+
+```bash
+python3 scripts/check_memory_repo.py
+```
+
+新建记忆提案：
+
+```bash
+python3 scripts/new_proposal.py "提案标题" --type memory
+```
+
+新建资源变更提案：
+
+```bash
+python3 scripts/new_proposal.py "申请页面编号" --type resource
+```

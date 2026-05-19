@@ -1,0 +1,10 @@
+# Ownership hints for GitHub review.
+# Replace placeholder handles with real GitHub usernames before enforcing CODEOWNERS.
+
+/00_规则/ @chenjiyan @liuda @wang
+/01_项目/ @chenjiyan @liuda @wang
+/02_技能库/ @xiaoming @chenjiyan
+/03_工作流/ @chenjiyan @wang
+/04_资源登记/ @chenjiyan @liuda @wang
+/05_待审核/ @chenjiyan
+/模板/ @chenjiyan

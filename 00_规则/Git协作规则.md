@@ -41,3 +41,12 @@ source: 肖明 GitHub 共享库方案
 python3 scripts/check_memory_repo.py
 ```
 
+## 新建提案
+
+建议用脚本生成提案，避免漏字段：
+
+```bash
+python3 scripts/new_proposal.py "提案标题" --type memory
+python3 scripts/new_proposal.py "Skill 标题" --type skill --owner 肖明
+python3 scripts/new_proposal.py "资源变更标题" --type resource
+```
