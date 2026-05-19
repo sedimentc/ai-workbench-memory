@@ -56,3 +56,10 @@ python3 scripts/new_proposal.py "提案标题" --type memory
 ```bash
 python3 scripts/new_proposal.py "申请页面编号" --type resource
 ```
+
+## 当前实测闭环
+
+- 已有新窗口接手测试用例。
+- 已有新窗口接手实测记录模板。
+- 已用 `scripts/new_proposal.py` 生成过真实记忆提案。
+- 自检脚本会检查项目目录是否包含接手所需核心文件。

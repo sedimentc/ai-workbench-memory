@@ -19,6 +19,7 @@ ALLOWED_STATUS = {
     "conflict",
 }
 REQUIRED_KEYS = {"id", "type", "status", "owner", "scope", "sensitivity", "last_reviewed", "source"}
+REQUIRED_PROJECT_FILES = {"项目总览.md", "StartPack.md", "当前状态.md", "接手说明.md"}
 SECRET_ASSIGNMENT = re.compile(
     r"(?i)\b(password|passwd|token|api[_-]?key|secret)\b\s*[:=]\s*['\"]?([A-Za-z0-9_\-./+=]{8,})"
 )
@@ -106,6 +107,19 @@ def check_page_badges() -> list[str]:
     return errors
 
 
+def check_project_structure() -> list[str]:
+    errors: list[str] = []
+    projects_root = ROOT / "01_项目"
+    if not projects_root.exists():
+        return [f"{projects_root.relative_to(ROOT)}: missing projects directory"]
+    for project_dir in sorted(path for path in projects_root.iterdir() if path.is_dir()):
+        present = {path.name for path in project_dir.glob("*.md")}
+        missing = sorted(REQUIRED_PROJECT_FILES - present)
+        if missing:
+            errors.append(f"{project_dir.relative_to(ROOT)}: missing project files: {', '.join(missing)}")
+    return errors
+
+
 def main() -> int:
     files = iter_markdown_files()
     all_markdown_files = iter_markdown_files(include_github=True)
@@ -113,6 +127,7 @@ def main() -> int:
     errors.extend(check_frontmatter(files))
     errors.extend(check_sensitive_values(all_markdown_files))
     errors.extend(check_page_badges())
+    errors.extend(check_project_structure())
 
     if errors:
         print("CHECK_FAIL")
