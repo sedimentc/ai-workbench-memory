@@ -296,6 +296,11 @@
       font-weight: 850;
       margin: 2px 2px 10px;
     }
+    .entry-stack {
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
     .workspace-panel { min-width: 0; }
     .col {
       background: #fff;
@@ -462,7 +467,25 @@
 
     <section class="workbench" id="workbench">
       <aside class="module-sidebar">
-        <div class="sidebar-title">快捷入口</div>
+        <div class="sidebar-title">系统入口</div>
+        <div class="entry-stack">
+          <div class="item compact clickable" data-doc="AI入口.md" role="button" tabindex="0">
+            <div class="item-title"><span>AI入口</span></div>
+            <div class="item-meta">新窗口必读</div>
+            <div class="item-body">AI入口.md</div>
+          </div>
+          <div class="item compact clickable" data-doc="总览.md" role="button" tabindex="0">
+            <div class="item-title"><span>总览</span></div>
+            <div class="item-meta">全局地图</div>
+            <div class="item-body">总览.md</div>
+          </div>
+          <div class="item compact clickable" data-doc="00_规则/AI读取规则.md" role="button" tabindex="0">
+            <div class="item-title"><span>AI读取规则</span></div>
+            <div class="item-meta">读取优先级</div>
+            <div class="item-body">00_规则/AI读取规则.md</div>
+          </div>
+        </div>
+        <div class="sidebar-title">模块入口</div>
         <div class="module-map" id="module-map"></div>
       </aside>
       <div class="resizer" data-resizer="left" title="拖动调整快捷入口宽度"></div>
@@ -764,7 +787,7 @@
       ]);
       Object.assign(state, { status, structure, git, resources, imported, proposals, candidates, startPack: null });
       renderNumberedColumns(); renderSummary(); renderActiveModuleData();
-      if (!$("#doc-body").textContent) openDoc("README.md");
+      if (!$("#doc-body").textContent) openDoc("AI入口.md");
     }
     async function generateHandoff() {
       state.startPack = await api("/api/start-pack");
