@@ -242,6 +242,94 @@ def parse_table(rel: str) -> list[dict[str, str]]:
     return rows
 
 
+def clean_table_value(value: object) -> str:
+    return re.sub(r"\s+", " ", str(value or "").replace("|", "/")).strip()
+
+
+def code_cell(value: object) -> str:
+    value = clean_table_value(value)
+    return f"`{value}`" if value else ""
+
+
+def render_table(headers: list[str], rows: list[dict[str, str]], code_headers: set[str] | None = None) -> str:
+    code_headers = code_headers or set()
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "| " + " | ".join("---" for _ in headers) + " |",
+    ]
+    for row in rows:
+        cells = []
+        for header in headers:
+            value = row.get(header, "")
+            cells.append(code_cell(value) if header in code_headers else clean_table_value(value))
+        lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def replace_section_table(rel: str, heading: str, headers: list[str], rows: list[dict[str, str]], code_headers: set[str] | None = None) -> None:
+    path = ROOT / rel
+    text = path.read_text(encoding="utf-8")
+    table = render_table(headers, rows, code_headers)
+    pattern = re.compile(
+        rf"(##\s+{re.escape(heading)}\s*\n\n)(\|.*\n\|(?:\s*:?-{{3,}}:?\s*\|)+\n(?:\|.*\n?)*)",
+        re.MULTILINE,
+    )
+    next_text, count = pattern.subn(rf"\1{table}\n", text, count=1)
+    if count != 1:
+        raise ValueError(f"cannot locate table under heading: {heading}")
+    path.write_text(next_text, encoding="utf-8")
+
+
+def safe_slug(value: object) -> str:
+    slug = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff_-]+", "", str(value or "").strip())
+    if not slug:
+        raise ValueError("name is required")
+    return slug
+
+
+def today() -> str:
+    return datetime.now().astimezone().strftime("%Y-%m-%d")
+
+
+def timestamp() -> str:
+    return datetime.now().astimezone().strftime("%Y%m%d%H%M%S")
+
+
+DEPARTMENT_HEADERS = ["部门", "部门文档", "项目数", "负责人", "状态", "说明"]
+PROJECT_HEADERS = ["项目", "状态", "Git仓库", "本地路径", "项目总览", "StartPack", "当前状态", "接手说明", "负责人", "备注"]
+DEPARTMENT_INDEX = "01_项目/部门总览.md"
+
+
+def department_rows() -> list[dict[str, str]]:
+    return parse_table(DEPARTMENT_INDEX) if (ROOT / DEPARTMENT_INDEX).exists() else []
+
+
+def write_department_rows(rows: list[dict[str, str]]) -> None:
+    replace_section_table(DEPARTMENT_INDEX, "部门列表", DEPARTMENT_HEADERS, rows, {"部门文档"})
+
+
+def project_rows(department_overview: str) -> list[dict[str, str]]:
+    return parse_table(department_overview) if (ROOT / department_overview).exists() else []
+
+
+def write_project_rows(department_overview: str, rows: list[dict[str, str]]) -> None:
+    replace_section_table(
+        department_overview,
+        "负责项目",
+        PROJECT_HEADERS,
+        rows,
+        {"Git仓库", "本地路径", "项目总览", "StartPack", "当前状态", "接手说明"},
+    )
+
+
+def refresh_department_counts() -> None:
+    rows = department_rows()
+    for row in rows:
+        overview = row.get("部门文档", "")
+        row["项目数"] = str(len(project_rows(overview))) if overview else "0"
+    write_department_rows(rows)
+
+
 def extract_section(text: str, heading: str, max_chars: int = 700) -> str:
     pattern = re.compile(rf"^##\s+{re.escape(heading)}\s*$([\s\S]*?)(?=^##\s+|\Z)", re.MULTILINE)
     match = pattern.search(strip_frontmatter(text))
@@ -322,7 +410,7 @@ def structure_payload() -> dict[str, object]:
 
 def project_catalog_payload() -> dict[str, object]:
     departments: list[dict[str, object]] = []
-    department_index = "01_项目/部门总览.md"
+    department_index = DEPARTMENT_INDEX
     department_rows = parse_table(department_index) if (ROOT / department_index).exists() else []
     assigned_paths: set[str] = set()
     for row in department_rows:
@@ -347,6 +435,7 @@ def project_catalog_payload() -> dict[str, object]:
                         "handoff": project.get("接手说明", ""),
                         "owner": project.get("负责人", ""),
                         "note": project.get("备注", ""),
+                        "protected": project.get("本地路径", "") == "01_项目/AI工作台",
                     }
                 )
             summary = extract_section(read_text(overview), "部门定位", 260)
@@ -401,6 +490,217 @@ def project_catalog_payload() -> dict[str, object]:
         "departments": departments,
         "projectCount": sum(len(row["projects"]) for row in departments),
     }
+
+
+def create_project_doc(path: Path, title: str, doc_type: str, scope: str, body: str, source: str) -> None:
+    path.write_text(
+        f"""---
+id: PROJ-{timestamp()}-{safe_slug(path.stem).upper()}
+type: {doc_type}
+status: current
+owner: 陈纪言
+reviewer: 刘大/老王/肖明
+scope: {scope}
+sensitivity: internal
+last_reviewed: {today()}
+source: {source}
+---
+
+# {title}
+
+{body}
+""",
+        encoding="utf-8",
+    )
+
+
+def create_department_payload(body: bytes) -> dict[str, object]:
+    data = json.loads(body.decode("utf-8") or "{}")
+    name = safe_slug(data.get("name"))
+    owner = clean_table_value(data.get("owner") or "陈纪言")
+    summary = clean_table_value(data.get("summary") or "待补充部门说明")
+    overview = f"01_项目/{name}/部门总览.md"
+    rows = department_rows()
+    if any(row.get("部门") == name or row.get("部门文档") == overview for row in rows):
+        raise ValueError("department already exists")
+    directory = ROOT / "01_项目" / name
+    directory.mkdir(parents=True, exist_ok=False)
+    (directory / "部门总览.md").write_text(
+        f"""---
+id: PROJ-DEPARTMENT-{timestamp()}
+type: department_overview
+status: current
+owner: {owner}
+reviewer: 刘大/老王/肖明
+scope: {name}
+sensitivity: internal
+last_reviewed: {today()}
+source: 运行演示页面自定义新增
+---
+
+# {name}
+
+## 部门定位
+
+{summary}
+
+## 负责项目
+
+| 项目 | 状态 | Git仓库 | 本地路径 | 项目总览 | StartPack | 当前状态 | 接手说明 | 负责人 | 备注 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+## AI读取方式
+
+1. 先读 `01_项目/部门总览.md`，确认项目属于哪个部门。
+2. 再读本部门 `部门总览.md`，确认项目仓库、本地路径和负责人。
+3. 进入目标项目后，按项目 `StartPack.md`、`当前状态.md`、`接手说明.md` 接手。
+
+## Git协作方式
+
+- 个人分支可以调整本部门项目记录。
+- 需要进入主分支的改动先走审核或 PR。
+""",
+        encoding="utf-8",
+    )
+    rows.append({"部门": name, "部门文档": overview, "项目数": "0", "负责人": owner, "状态": "current", "说明": summary})
+    write_department_rows(rows)
+    return {"ok": True, "path": overview, "projects": project_catalog_payload()}
+
+
+def delete_department_payload(body: bytes) -> dict[str, object]:
+    data = json.loads(body.decode("utf-8") or "{}")
+    overview = clean_table_value(data.get("overview"))
+    if not overview:
+        raise ValueError("department overview is required")
+    rows = department_rows()
+    target = next((row for row in rows if row.get("部门文档") == overview), None)
+    if not target:
+        raise ValueError("department not found")
+    if project_rows(overview):
+        raise ValueError("department has projects; delete or move projects first")
+    path = safe_relative_path(overview)
+    if path.name != "部门总览.md" or path.parent.parent != ROOT / "01_项目":
+        raise ValueError("invalid department path")
+    remaining = [row for row in rows if row.get("部门文档") != overview]
+    write_department_rows(remaining)
+    path.unlink(missing_ok=True)
+    try:
+        path.parent.rmdir()
+    except OSError:
+        pass
+    return {"ok": True, "projects": project_catalog_payload()}
+
+
+def create_project_payload(body: bytes) -> dict[str, object]:
+    data = json.loads(body.decode("utf-8") or "{}")
+    department_overview = clean_table_value(data.get("department"))
+    if not department_overview:
+        raise ValueError("department is required")
+    department_file = safe_relative_path(department_overview)
+    if department_file.name != "部门总览.md" or department_file.parent.parent != ROOT / "01_项目":
+        raise ValueError("invalid department")
+    name = safe_slug(data.get("name"))
+    owner = clean_table_value(data.get("owner") or "陈纪言")
+    repo = clean_table_value(data.get("repo") or "")
+    note = clean_table_value(data.get("note") or "面板自定义新增")
+    project_dir = department_file.parent / name
+    if project_dir.exists():
+        raise ValueError("project directory already exists")
+    rows = project_rows(department_overview)
+    rel = str(project_dir.relative_to(ROOT))
+    if any(row.get("项目") == name or row.get("本地路径") == rel for row in rows):
+        raise ValueError("project already exists in department")
+    project_dir.mkdir(parents=True)
+    source = "运行演示页面自定义新增"
+    create_project_doc(
+        project_dir / "项目总览.md",
+        f"项目总览：{name}",
+        "project_overview",
+        name,
+        "## 项目目标\n\n待补充。\n\n## 相关系统\n\n待补充。",
+        source,
+    )
+    create_project_doc(
+        project_dir / "StartPack.md",
+        f"StartPack：{name}",
+        "start_pack",
+        name,
+        "## 当前目标\n\n待补充。\n\n## 当前状态\n\n待补充。\n\n## 已确认规则\n\n待补充。\n\n## 不确定项\n\n待确认。",
+        source,
+    )
+    create_project_doc(
+        project_dir / "当前状态.md",
+        f"当前状态：{name}",
+        "project_state",
+        name,
+        "## 当前事实\n\n待补充。\n\n## 最近有效任务\n\n待补充。\n\n## 风险和卡点\n\n待确认。",
+        source,
+    )
+    create_project_doc(
+        project_dir / "接手说明.md",
+        f"接手说明：{name}",
+        "handoff",
+        name,
+        "## 接手顺序\n\n1. 读项目总览。\n2. 读 StartPack。\n3. 读当前状态。\n4. 不确定时向负责人确认。",
+        source,
+    )
+    rows.append(
+        {
+            "项目": name,
+            "状态": "current",
+            "Git仓库": repo,
+            "本地路径": rel,
+            "项目总览": f"{rel}/项目总览.md",
+            "StartPack": f"{rel}/StartPack.md",
+            "当前状态": f"{rel}/当前状态.md",
+            "接手说明": f"{rel}/接手说明.md",
+            "负责人": owner,
+            "备注": note,
+        }
+    )
+    write_project_rows(department_overview, rows)
+    refresh_department_counts()
+    return {"ok": True, "path": f"{rel}/项目总览.md", "projects": project_catalog_payload()}
+
+
+def delete_project_payload(body: bytes) -> dict[str, object]:
+    data = json.loads(body.decode("utf-8") or "{}")
+    department_overview = clean_table_value(data.get("department"))
+    local_path = clean_table_value(data.get("localPath"))
+    if not department_overview or not local_path:
+        raise ValueError("department and localPath are required")
+    if local_path == "01_项目/AI工作台":
+        raise ValueError("sample project is protected")
+    project_path = safe_relative_path(local_path)
+    if ROOT / "01_项目" not in project_path.parents:
+        raise ValueError("invalid project path")
+    rows = project_rows(department_overview)
+    next_rows = [row for row in rows if row.get("本地路径") != local_path]
+    if len(next_rows) == len(rows):
+        raise ValueError("project not found")
+    write_project_rows(department_overview, next_rows)
+    if project_path.exists():
+        archive_root = ROOT / "99_归档" / "旧项目记录"
+        archive_root.mkdir(parents=True, exist_ok=True)
+        archive_path = archive_root / f"{timestamp()}-{project_path.name}"
+        project_path.rename(archive_path)
+    refresh_department_counts()
+    return {"ok": True, "projects": project_catalog_payload()}
+
+
+def project_hierarchy_payload(body: bytes) -> dict[str, object]:
+    data = json.loads(body.decode("utf-8") or "{}")
+    action = data.get("action")
+    encoded = json.dumps(data, ensure_ascii=False).encode("utf-8")
+    if action == "create_department":
+        return create_department_payload(encoded)
+    if action == "delete_department":
+        return delete_department_payload(encoded)
+    if action == "create_project":
+        return create_project_payload(encoded)
+    if action == "delete_project":
+        return delete_project_payload(encoded)
+    raise ValueError("unsupported project hierarchy action")
 
 
 def document_payload(rel: str) -> dict[str, object]:
@@ -794,6 +1094,12 @@ class DemoHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/import-material":
             try:
                 self.send_json(import_material_payload(body))
+            except (FileNotFoundError, OSError, ValueError) as exc:
+                self.send_json({"error": str(exc)}, status=400)
+            return
+        if parsed.path == "/api/project-hierarchy":
+            try:
+                self.send_json(project_hierarchy_payload(body))
             except (FileNotFoundError, OSError, ValueError) as exc:
                 self.send_json({"error": str(exc)}, status=400)
             return

@@ -37,6 +37,8 @@
     }
     button:hover { border-color: var(--green); background: var(--green-soft); }
     button.primary { background: var(--green); color: #fff; border-color: var(--green); font-weight: 700; }
+    button.danger { color: var(--red); border-color: #fecdca; background: #fff; }
+    button.danger:hover { background: #fef3f2; border-color: var(--red); }
     input, select, textarea {
       width: 100%;
       border: 1px solid var(--line);
@@ -335,6 +337,22 @@
       grid-template-columns: minmax(80px, .52fr) minmax(60px, .22fr) minmax(80px, 1fr);
       margin: 0;
     }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(90px, 1fr)) auto;
+      gap: 7px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .form-grid.two {
+      grid-template-columns: minmax(120px, .6fr) minmax(120px, 1fr) auto;
+    }
+    .action-line {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      min-height: 18px;
+    }
     .doc-panel {
       background: #fff;
       border: 1px solid var(--line);
@@ -502,7 +520,29 @@
       const intro = item(mod.role, mod.defaultRead, mod.purpose);
       const files = `<div class="section-label">模块文件</div>${fileItems(mod.files || [])}`;
       if (mod.module === "01_项目") {
-        return `${intro}<div class="section-label">部门项目导航</div><div id="project-col"></div><div class="section-label">新窗口接手包</div><div id="handoff-col"></div>${files}`;
+        return `${intro}
+          <div class="item soft">
+            <div class="item-title"><span>自定义分级</span><span class="tag">写入 01_项目</span></div>
+            <div class="form-grid">
+              <input id="dept-name" placeholder="新增部门名">
+              <input id="dept-owner" placeholder="负责人">
+              <input id="dept-summary" placeholder="部门说明">
+              <button id="add-department" class="primary">新增部门</button>
+            </div>
+            <div class="form-grid">
+              <select id="project-department"></select>
+              <input id="project-name" placeholder="新增项目名">
+              <input id="project-repo" placeholder="Git 仓库地址">
+              <button id="add-project" class="primary">新增项目</button>
+            </div>
+            <div class="form-grid two">
+              <select id="delete-project-select"></select>
+              <select id="delete-department-select"></select>
+              <button id="delete-selected" class="danger">删除/归档</button>
+            </div>
+            <div class="action-line" id="project-action-line">部门可删除；项目删除会移入 99_归档/旧项目记录。</div>
+          </div>
+          <div class="section-label">部门项目导航</div><div id="project-col"></div><div class="section-label">新窗口接手包</div><div id="handoff-col"></div>${files}`;
       }
       if (mod.module === "03_工作流") {
         const flow = (state.structure?.workflow || []).map((step, index) => `${index + 1}. ${step}`).join("\n");
@@ -609,6 +649,7 @@
       if (count) count.textContent = `${departments.length}/${projectCount}`;
       if (!departments.length) {
         col.innerHTML = "<div class='empty'>暂无部门项目数据</div>";
+        renderProjectControls();
         return;
       }
       col.innerHTML = departments.map((dept) => `
@@ -628,6 +669,18 @@
           `).join("")}
         </div>
       `).join("");
+      renderProjectControls();
+    }
+    function renderProjectControls() {
+      const departments = state.projects?.departments || [];
+      const projectDepartment = $("#project-department");
+      const deleteDepartment = $("#delete-department-select");
+      const deleteProject = $("#delete-project-select");
+      if (!projectDepartment || !deleteDepartment || !deleteProject) return;
+      projectDepartment.innerHTML = departments.map((dept) => `<option value="${escapeHtml(dept.overview)}">${escapeHtml(dept.name)}</option>`).join("");
+      deleteDepartment.innerHTML = `<option value="">删除空部门...</option>` + departments.map((dept) => `<option value="department:${escapeHtml(dept.overview)}">${escapeHtml(dept.name)} · ${dept.projects?.length || 0} 项目</option>`).join("");
+      const projectOptions = departments.flatMap((dept) => (dept.projects || []).map((project) => ({ dept, project }))).filter(({ project }) => !project.protected);
+      deleteProject.innerHTML = `<option value="">归档项目...</option>` + projectOptions.map(({ dept, project }) => `<option value="project:${escapeHtml(dept.overview)}|${escapeHtml(project.localPath)}">${escapeHtml(dept.name)} / ${escapeHtml(project.name)}</option>`).join("");
     }
     function renderHandoff() {
       const data = state.startPack;
@@ -773,6 +826,54 @@
       renderNumberedColumns(); renderActiveModuleData(); renderSummary();
       openDoc(result.path);
     }
+    async function mutateProjectHierarchy(payload, label) {
+      const result = await api("/api/project-hierarchy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      state.projects = result.projects;
+      state.status = await api("/api/status");
+      state.activeModule = "01_项目";
+      renderNumberedColumns(); renderActiveModuleData(); renderSummary();
+      if (result.path) openDoc(result.path);
+      const line = $("#project-action-line");
+      if (line) line.textContent = label;
+      if ($("#top-notice")) $("#top-notice").textContent = label;
+    }
+    async function addDepartment() {
+      await mutateProjectHierarchy({
+        action: "create_department",
+        name: $("#dept-name").value,
+        owner: $("#dept-owner").value,
+        summary: $("#dept-summary").value,
+      }, "部门已新增，并写入 01_项目/部门总览.md");
+    }
+    async function addProject() {
+      await mutateProjectHierarchy({
+        action: "create_project",
+        department: $("#project-department").value,
+        name: $("#project-name").value,
+        repo: $("#project-repo").value,
+        owner: $("#dept-owner").value || "陈纪言",
+        note: "面板自定义新增",
+      }, "项目已新增，并生成项目总览、StartPack、当前状态、接手说明。");
+    }
+    async function deleteSelectedProjectLevel() {
+      const projectValue = $("#delete-project-select").value;
+      const departmentValue = $("#delete-department-select").value;
+      if (projectValue.startsWith("project:")) {
+        const [department, localPath] = projectValue.replace("project:", "").split("|");
+        await mutateProjectHierarchy({ action: "delete_project", department, localPath }, "项目已从活跃列表移除，并归档到 99_归档/旧项目记录。");
+        return;
+      }
+      if (departmentValue.startsWith("department:")) {
+        await mutateProjectHierarchy({ action: "delete_department", overview: departmentValue.replace("department:", "") }, "空部门已删除，并同步更新部门总览。");
+        return;
+      }
+      const line = $("#project-action-line");
+      if (line) line.textContent = "请选择要归档的项目，或要删除的空部门。";
+    }
     async function createProposal(official) {
       const result = await api("/api/proposal", {
         method: "POST",
@@ -816,6 +917,9 @@
       if (button.id === "resolve-query") resolveQuery($("#query").value);
       if (button.id === "refresh-candidates") { state.candidates = await api("/api/import-candidates"); renderCandidates(); }
       if (button.id === "import-selected") importSelected();
+      if (button.id === "add-department") addDepartment().catch((error) => { const line = $("#project-action-line"); if (line) line.textContent = String(error.message || error); });
+      if (button.id === "add-project") addProject().catch((error) => { const line = $("#project-action-line"); if (line) line.textContent = String(error.message || error); });
+      if (button.id === "delete-selected") deleteSelectedProjectLevel().catch((error) => { const line = $("#project-action-line"); if (line) line.textContent = String(error.message || error); });
       if (button.id === "open-import-index") openDoc("08_导入资料/README.md");
       if (button.id === "refresh-git") { state.git = await api("/api/git"); renderGit(); renderSummary(); }
       if (button.id === "run-check") runCheck();
