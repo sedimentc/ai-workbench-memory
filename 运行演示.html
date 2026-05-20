@@ -356,14 +356,28 @@
       background: var(--green-soft);
     }
     .tree-row.department {
+      grid-template-columns: minmax(120px, .28fr) minmax(130px, .24fr);
       border-color: #cbd6e4;
       background: #fff;
       font-weight: 760;
     }
-    .tree-row.department .tree-code {
+    .dept-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dept-arrow {
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 11px;
       transition: transform .15s ease;
     }
-    .tree-group.collapsed .tree-row.department .tree-code {
+    .tree-group.collapsed .tree-row.department .dept-arrow {
       transform: rotate(-90deg);
     }
     .tree-row.project {
@@ -1213,10 +1227,8 @@
         return `
         <div class="tree-group${collapsed ? " collapsed" : ""}">
           <div class="tree-row department" data-dept-toggle="${escapeHtml(key)}" role="button" tabindex="0" aria-expanded="${collapsed ? "false" : "true"}">
-            <span class="tree-code">▾</span>
-            <span class="tree-title">${escapeHtml(dept.name)}</span>
+            <span class="tree-title dept-title">${escapeHtml(dept.name)}<span class="dept-arrow">▾</span></span>
             <span class="tree-meta">${escapeHtml(dept.status)} · ${escapeHtml(dept.owner)}</span>
-            <span class="tree-path">${escapeHtml(dept.summary || dept.overview || "")}</span>
           </div>
           <div class="tree-children">
             ${(dept.projects || []).length ? (dept.projects || []).map((project) => `
