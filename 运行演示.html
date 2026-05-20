@@ -133,16 +133,20 @@
     }
     .module-map {
       display: grid;
-      grid-template-columns: repeat(8, minmax(130px, 1fr));
       gap: 8px;
     }
     .module-tile {
-      min-height: 72px;
+      width: 100%;
+      min-height: 70px;
       text-align: left;
       padding: 9px 10px;
       background: #fff;
       border: 1px solid var(--line);
       box-shadow: var(--shadow);
+    }
+    .module-tile.active {
+      border-color: var(--green);
+      background: var(--green-soft);
     }
     .module-code {
       display: inline-grid;
@@ -247,21 +251,40 @@
     }
     .tag.ok { background: #dcfce7; color: #166534; }
     .tag.blue { background: var(--blue-soft); color: #1d4ed8; }
-    .columns {
+    .workbench {
       display: grid;
-      grid-template-columns: repeat(8, minmax(310px, 1fr));
+      grid-template-columns: 248px minmax(0, 1fr);
       gap: 10px;
-      align-items: start;
-      overflow-x: auto;
-      padding-bottom: 6px;
     }
-    .col {
-      min-width: 300px;
+    .module-sidebar {
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
-      max-height: calc(100vh - 390px);
+      padding: 10px;
+      align-self: start;
+      position: sticky;
+      top: 150px;
+      max-height: calc(100vh - 170px);
+      overflow: auto;
+    }
+    .sidebar-title {
+      font-weight: 850;
+      margin: 2px 2px 10px;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(360px, .62fr) minmax(460px, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+    .workspace-panel { min-width: 0; }
+    .col {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      max-height: calc(100vh - 270px);
       overflow: hidden;
       display: grid;
       grid-template-rows: auto 1fr;
@@ -307,25 +330,24 @@
       padding: 6px 2px 8px;
     }
     .doc-panel {
-      margin-top: 12px;
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
       display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
-      min-height: 260px;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: calc(100vh - 270px);
       overflow: hidden;
     }
     .doc-meta {
-      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
       padding: 12px;
       color: var(--muted);
       overflow-wrap: anywhere;
     }
     .doc-body {
       padding: 12px;
-      max-height: 360px;
+      max-height: none;
       overflow: auto;
       white-space: pre-wrap;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -337,8 +359,13 @@
       .titlebar, .wide-action, .control-row, .doc-panel { grid-template-columns: 1fr; }
       .toolbar { grid-template-columns: 1fr 1fr; }
       .summary { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
-      .module-map { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .workspace { grid-template-columns: 1fr; }
+      .module-sidebar { position: static; max-height: none; }
       .col { max-height: none; }
+      .doc-panel { min-height: 360px; }
+    }
+    @media (max-width: 760px) {
+      .workbench { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -371,7 +398,6 @@
   </div>
 
   <div class="rows">
-    <div class="module-map" id="module-map"></div>
     <div class="control-row">
       <div class="row-card">
         <div class="row-title">07_实战索引查询</div>
@@ -388,16 +414,23 @@
   <main class="main">
     <section class="summary" id="summary"></section>
 
-    <section class="columns" id="module-columns"></section>
-
-    <section class="doc-panel">
-      <div class="doc-meta" id="doc-meta">未选择文档</div>
-      <div class="doc-body" id="doc-body"></div>
+    <section class="workbench">
+      <aside class="module-sidebar">
+        <div class="sidebar-title">快捷入口</div>
+        <div class="module-map" id="module-map"></div>
+      </aside>
+      <section class="workspace">
+        <section class="workspace-panel" id="module-columns"></section>
+        <section class="doc-panel">
+          <div class="doc-meta" id="doc-meta">未选择文档</div>
+          <div class="doc-body" id="doc-body"></div>
+        </section>
+      </section>
     </section>
   </main>
 
   <script>
-    const state = { status: null, structure: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null };
+    const state = { status: null, structure: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目" };
     const $ = (selector) => document.querySelector(selector);
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch]));
     async function api(url, options) {
@@ -465,24 +498,40 @@
     }
     function renderNumberedColumns() {
       const modules = state.structure?.modules || [];
+      if (!modules.some((mod) => mod.module === state.activeModule)) {
+        state.activeModule = modules.find((mod) => mod.module === "01_项目")?.module || modules[0]?.module || "";
+      }
       $("#module-map").innerHTML = modules.map((mod) => {
         const code = mod.module === "scripts" ? "py" : mod.module.slice(0, 2);
-        return `<button class="module-tile" data-module="${escapeHtml(mod.module)}">
+        const active = mod.module === state.activeModule ? " active" : "";
+        return `<button class="module-tile${active}" data-module="${escapeHtml(mod.module)}">
           <span class="module-code">${escapeHtml(code)}</span>
           <div class="module-name">${escapeHtml(mod.module)}</div>
           <div class="module-role">${escapeHtml(mod.role)}</div>
         </button>`;
       }).join("");
-      $("#module-columns").innerHTML = modules.map((mod) => {
-        const view = moduleView[mod.module] || { count: "", title: mod.module, sub: mod.role };
-        return `<div class="col" data-column="${escapeHtml(mod.module)}">
+      const mod = modules.find((row) => row.module === state.activeModule);
+      if (!mod) {
+        $("#module-columns").innerHTML = "<div class='empty'>暂无模块</div>";
+        return;
+      }
+      const view = moduleView[mod.module] || { count: "", title: mod.module, sub: mod.role };
+      $("#module-columns").innerHTML = `<div class="col" data-column="${escapeHtml(mod.module)}">
           <div class="col-head">
             <div><div class="col-title">${escapeHtml(view.title)}</div><div class="col-sub">${escapeHtml(view.sub)}</div></div>
             <span class="tag ok" id="${escapeHtml(view.count)}">${(mod.files || []).length}</span>
           </div>
           <div class="col-body">${moduleBody(mod)}</div>
         </div>`;
-      }).join("");
+    }
+    function renderActiveModuleData() {
+      renderHandoff();
+      renderIndex();
+      renderImported();
+      renderGit();
+      renderResources();
+      renderProposals();
+      renderCandidates();
     }
     function renderSummary() {
       const check = state.status?.check?.code === 0 ? "CHECK_PASS" : "CHECK_FAIL";
@@ -505,13 +554,16 @@
     }
     function renderHandoff() {
       const data = state.startPack;
+      const count = $("#handoff-count");
+      const col = $("#handoff-col");
+      if (!col) return;
       if (!data) {
-        $("#handoff-count").textContent = "0";
-        $("#handoff-col").innerHTML = "<div class='empty'>点击上方“生成新窗口接手包”后显示。</div>";
+        if (count) count.textContent = "0";
+        col.innerHTML = "<div class='empty'>点击上方“生成新窗口接手包”后显示。</div>";
         return;
       }
-      $("#handoff-count").textContent = data.filesRead.length;
-      $("#handoff-col").innerHTML = [
+      if (count) count.textContent = data.filesRead.length;
+      col.innerHTML = [
         item("读取文件", "接手顺序", data.filesRead.join("\n")),
         item("当前目标", "StartPack", data.goal),
         item("当前状态", "StartPack", data.state),
@@ -520,12 +572,15 @@
     }
     function renderIndex() {
       const data = state.index;
-      $("#index-count").textContent = data?.query ? 1 : 0;
+      const count = $("#index-count");
+      const col = $("#index-col");
+      if (!col) return;
+      if (count) count.textContent = data?.query ? 1 : 0;
       if (!data?.query) {
-        $("#index-col").innerHTML = "<div class='empty'>输入页面编号、技能编号、窗口别名或字段名后查询。</div>";
+        col.innerHTML = "<div class='empty'>输入页面编号、技能编号、窗口别名或字段名后查询。</div>";
         return;
       }
-      $("#index-col").innerHTML = [
+      col.innerHTML = [
         item("用户说法", data.query, `标准编号：${data.standard}`),
         data.alias ? item("别名命中", data.alias["标准对象"], data.alias["下一步"]) : item("别名命中", "无"),
         data.page ? item("页面命中", data.page["页面名"], `${data.page["页面编号"]}\n${data.page["入口/路径"]}\n${data.page["文档定位"]}`) : "",
@@ -534,25 +589,36 @@
     }
     function renderImported() {
       const imported = state.imported?.imported || [];
-      $("#import-count").textContent = imported.length;
-      $("#import-col").innerHTML = imported.length ? imported.map((row) => item(row.title, `${row.sensitivity} · ${row.status}`, row.path, row.path)).join("") : "<div class='empty'>暂无导入资料</div>";
+      const count = $("#import-count");
+      const col = $("#import-col");
+      if (!col) return;
+      if (count) count.textContent = imported.length;
+      col.innerHTML = imported.length ? imported.map((row) => item(row.title, `${row.sensitivity} · ${row.status}`, row.path, row.path)).join("") : "<div class='empty'>暂无导入资料</div>";
     }
     function renderGit() {
       const git = state.git;
-      if (!git) return;
-      $("#branch-count").textContent = git.branches.length;
+      const count = $("#branch-count");
+      const col = $("#git-col");
+      if (!git || !col) return;
+      if (count) count.textContent = git.branches.length;
+      const mainBranch = git.branches.find((row) => row.name === "main") || git.branches.find((row) => row.name.endsWith("/main"));
+      const currentBranch = git.branches.find((row) => row.active) || git.branches.find((row) => row.name === git.current);
+      const mainline = mainBranch ? item("主线 main", mainBranch.commit.slice(0, 12), mainBranch.message) : item("主线 main", "未找到");
+      const branchLine = currentBranch ? item(`当前支线 ${git.current}`, currentBranch.commit.slice(0, 12), currentBranch.message) : item(`当前支线 ${git.current}`, "当前分支");
       const status = git.status.length ? git.status.map((line) => item(line, "working tree")).join("") : item("工作区干净", "status", "", "");
       const branches = git.branches.map((row) => item(row.active ? `* ${row.name}` : row.name, row.commit.slice(0, 12), row.message)).join("");
       const commits = git.commits.map((row) => item(row.commit, "commit", row.message)).join("");
-      $("#git-col").innerHTML = `<div class="item soft"><div class="item-title"><span>当前分支</span><span class="tag ok">${escapeHtml(git.current)}</span></div><div class="item-meta">${escapeHtml(git.remote || "无远端")}</div></div>${status}${branches}${commits}`;
+      col.innerHTML = `<div class="item soft"><div class="item-title"><span>Git 主线 / 支线</span><span class="tag ok">${escapeHtml(git.current)}</span></div><div class="item-meta">${escapeHtml(git.remote || "无远端")}</div></div>${mainline}${branchLine}${status}${branches}${commits}`;
       $("#branch-select").innerHTML = git.branches.map((row) => `<option ${row.active ? "selected" : ""}>${escapeHtml(row.name)}</option>`).join("");
     }
     function renderResources() {
       const res = state.resources;
-      if (!res) return;
+      const count = $("#resource-count");
+      const col = $("#resource-col");
+      if (!res || !col) return;
       const pages = res.pageBadges.filter((row) => row["编号"]).slice(-12).reverse();
-      $("#resource-count").textContent = res.pageBadges.filter((row) => row["编号"]).length;
-      $("#resource-col").innerHTML = [
+      if (count) count.textContent = res.pageBadges.filter((row) => row["编号"]).length;
+      col.innerHTML = [
         item("页面编号池", "AI工作台", `${pages.length} 条显示`),
         ...pages.map((row) => item(`#${row["编号"]} ${row["页面/模块"]}`, row["项目"], row["路径或说明"])),
         item("端口", `${res.ports.length} 条`, res.ports.slice(0, 4).map((row) => Object.values(row).join(" · ")).join("\n")),
@@ -561,8 +627,11 @@
     }
     function renderProposals() {
       const rows = state.proposals?.proposals || [];
-      $("#proposal-count").textContent = rows.length;
-      $("#proposal-col").innerHTML = `
+      const count = $("#proposal-count");
+      const col = $("#proposal-col");
+      if (!col) return;
+      if (count) count.textContent = rows.length;
+      col.innerHTML = `
         <div class="item soft">
           <input id="proposal-title" value="页面22接手规则补充">
           <textarea id="proposal-detail">用户说页面22时，AI 应先查别名词典和页面索引，再读项目 StartPack。</textarea>
@@ -573,7 +642,9 @@
     }
     function renderCandidates() {
       const candidates = state.candidates?.candidates || [];
-      $("#candidate-select").innerHTML = candidates.slice(0, 80).map((row) => `<option value="${escapeHtml(row.path)}" data-restricted="${row.restrictedHint ? "1" : "0"}">${escapeHtml(row.name)} · ${Math.round(row.size / 1024)}KB</option>`).join("");
+      const select = $("#candidate-select");
+      if (!select) return;
+      select.innerHTML = candidates.slice(0, 80).map((row) => `<option value="${escapeHtml(row.path)}" data-restricted="${row.restrictedHint ? "1" : "0"}">${escapeHtml(row.name)} · ${Math.round(row.size / 1024)}KB</option>`).join("");
     }
     async function openDoc(path) {
       const data = await api(`/api/document?path=${encodeURIComponent(path)}`);
@@ -592,18 +663,19 @@
         api("/api/import-candidates"),
       ]);
       Object.assign(state, { status, structure, git, resources, imported, proposals, candidates, startPack: null });
-      renderNumberedColumns(); renderSummary(); renderHandoff(); renderIndex(); renderImported(); renderGit(); renderResources(); renderProposals(); renderCandidates();
+      renderNumberedColumns(); renderSummary(); renderActiveModuleData();
       if (!$("#doc-body").textContent) openDoc("README.md");
     }
     async function generateHandoff() {
       state.startPack = await api("/api/start-pack");
-      renderHandoff();
-      $("#top-notice").textContent = `接手包已生成 · 读取 ${state.startPack.filesRead.length} 个核心文件 · 显示在“新窗口接手”列`;
-      document.querySelector("#handoff-col").scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+      state.activeModule = "01_项目";
+      renderNumberedColumns(); renderActiveModuleData();
+      $("#top-notice").textContent = `接手包已生成 · 读取 ${state.startPack.filesRead.length} 个核心文件 · 显示在右侧工作区`;
     }
     async function resolveQuery(value) {
       state.index = await api(`/api/resolve?q=${encodeURIComponent(value)}`);
-      renderIndex();
+      state.activeModule = "07_实战索引";
+      renderNumberedColumns(); renderActiveModuleData();
       $("#doc-meta").innerHTML = "<b>索引结果</b>";
       $("#doc-body").textContent = JSON.stringify(state.index, null, 2);
     }
@@ -618,7 +690,8 @@
         body: JSON.stringify({ path, title, restricted }),
       });
       state.imported = await api("/api/imported");
-      renderImported(); renderSummary();
+      state.activeModule = "08_导入资料";
+      renderNumberedColumns(); renderActiveModuleData(); renderSummary();
       openDoc(result.path);
     }
     async function createProposal(official) {
@@ -633,7 +706,8 @@
         }),
       });
       state.proposals = await api("/api/proposals");
-      renderProposals(); renderSummary();
+      state.activeModule = "05_待审核";
+      renderNumberedColumns(); renderActiveModuleData(); renderSummary();
       $("#doc-meta").innerHTML = `<b>${escapeHtml(result.path)}</b>`;
       $("#doc-body").textContent = result.content;
     }
@@ -648,8 +722,8 @@
       const button = event.target.closest("button");
       if (!button) return;
       if (button.dataset.module) {
-        const target = [...document.querySelectorAll(".col")].find((col) => col.dataset.column === button.dataset.module);
-        target?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+        state.activeModule = button.dataset.module;
+        renderNumberedColumns(); renderActiveModuleData();
         return;
       }
       if (button.dataset.doc) openDoc(button.dataset.doc);
