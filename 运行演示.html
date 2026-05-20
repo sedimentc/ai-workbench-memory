@@ -131,6 +131,44 @@
       display: grid;
       gap: 10px;
     }
+    .module-map {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .module-tile {
+      min-height: 72px;
+      text-align: left;
+      padding: 9px 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .module-code {
+      display: inline-grid;
+      place-items: center;
+      min-width: 32px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 850;
+      margin-bottom: 6px;
+    }
+    .module-name {
+      font-weight: 850;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .module-role {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .control-row {
       display: grid;
       grid-template-columns: minmax(300px, 1fr) minmax(560px, 1.5fr) minmax(260px, .72fr);
@@ -153,6 +191,7 @@
       gap: 8px;
       align-items: center;
     }
+    .search-controls { grid-template-columns: minmax(260px, 1fr) 90px; }
     .small-controls {
       display: flex;
       gap: 7px;
@@ -210,7 +249,7 @@
     .tag.blue { background: var(--blue-soft); color: #1d4ed8; }
     .columns {
       display: grid;
-      grid-template-columns: repeat(6, minmax(300px, 1fr));
+      grid-template-columns: repeat(8, minmax(310px, 1fr));
       gap: 10px;
       align-items: start;
       overflow-x: auto;
@@ -222,7 +261,7 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
-      max-height: calc(100vh - 320px);
+      max-height: calc(100vh - 390px);
       overflow: hidden;
       display: grid;
       grid-template-rows: auto 1fr;
@@ -261,6 +300,12 @@
     .item-body { margin-top: 8px; white-space: pre-wrap; font-size: 13px; }
     .split2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .query-row { display: grid; grid-template-columns: 1fr 72px; gap: 7px; margin-bottom: 8px; }
+    .section-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      padding: 6px 2px 8px;
+    }
     .doc-panel {
       margin-top: 12px;
       background: #fff;
@@ -292,6 +337,7 @@
       .titlebar, .wide-action, .control-row, .doc-panel { grid-template-columns: 1fr; }
       .toolbar { grid-template-columns: 1fr 1fr; }
       .summary { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .module-map { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
       .col { max-height: none; }
     }
   </style>
@@ -325,98 +371,24 @@
   </div>
 
   <div class="rows">
+    <div class="module-map" id="module-map"></div>
     <div class="control-row">
       <div class="row-card">
-        <div class="row-title">按口语查索引</div>
-        <div class="row-sub">页面、技能、窗口、字段</div>
+        <div class="row-title">07_实战索引查询</div>
+        <div class="row-sub">输入页面编号、技能编号、窗口别名、字段名</div>
       </div>
-      <div class="row-card inline-controls">
-        <input id="query" value="页面22">
-        <button data-query="页面22">页面22</button>
-        <button data-query="技能1">技能1</button>
+      <div class="row-card inline-controls search-controls">
+        <input id="query" value="" placeholder="例如：页面22 / SKILL-001 / 第四级聊天窗口">
         <button id="resolve-query" class="primary">查询</button>
       </div>
-      <div class="row-card small-controls">
-        <button data-query="小测">小测</button>
-        <button data-query="连接服务器">连接服务器</button>
-      </div>
-    </div>
-    <div class="control-row">
-      <div class="row-card">
-        <div class="row-title">本机 MD 导入</div>
-        <div class="row-sub">导入项目资料或受限资料</div>
-      </div>
-      <div class="row-card inline-controls">
-        <select id="candidate-select"></select>
-        <label class="chip"><input id="restricted-import" type="checkbox"> 受限</label>
-        <button id="import-selected" class="primary">导入</button>
-      </div>
-      <div class="row-card small-controls">
-        <button id="refresh-candidates">刷新候选</button>
-        <button id="open-import-index">导入目录</button>
-      </div>
-    </div>
-    <div class="control-row">
-      <div class="row-card">
-        <div class="row-title">Git 分支</div>
-        <div class="row-sub">查看分支、提交、工作区</div>
-      </div>
-      <div class="row-card small-controls">
-        <button id="refresh-git" class="primary">刷新 Git</button>
-        <button id="run-check">系统自检</button>
-        <button id="open-readme">README</button>
-      </div>
-      <div class="row-card" id="git-line">读取中</div>
+      <div class="row-card" id="query-hint">查询结果会显示在 `07_实战索引` 模块列，不再提供固定快捷键。</div>
     </div>
   </div>
 
   <main class="main">
     <section class="summary" id="summary"></section>
 
-    <section class="columns">
-      <div class="col">
-        <div class="col-head">
-          <div><div class="col-title">新窗口接手</div><div class="col-sub">StartPack / 当前事实</div></div>
-          <span class="tag ok" id="handoff-count">0</span>
-        </div>
-        <div class="col-body" id="handoff-col"></div>
-      </div>
-      <div class="col">
-        <div class="col-head">
-          <div><div class="col-title">实战索引</div><div class="col-sub">别名 / 页面 / 技能</div></div>
-          <span class="tag blue" id="index-count">0</span>
-        </div>
-        <div class="col-body" id="index-col"></div>
-      </div>
-      <div class="col">
-        <div class="col-head">
-          <div><div class="col-title">导入资料</div><div class="col-sub">本机 MD / TXT</div></div>
-          <span class="tag ok" id="import-count">0</span>
-        </div>
-        <div class="col-body" id="import-col"></div>
-      </div>
-      <div class="col">
-        <div class="col-head">
-          <div><div class="col-title">Git 分支</div><div class="col-sub">branch / commit / status</div></div>
-          <span class="tag" id="branch-count">0</span>
-        </div>
-        <div class="col-body" id="git-col"></div>
-      </div>
-      <div class="col">
-        <div class="col-head">
-          <div><div class="col-title">资源登记</div><div class="col-sub">页面编号 / 端口 / 电脑</div></div>
-          <span class="tag ok" id="resource-count">0</span>
-        </div>
-        <div class="col-body" id="resource-col"></div>
-      </div>
-      <div class="col">
-        <div class="col-head">
-          <div><div class="col-title">待审核</div><div class="col-sub">proposed / skill / resource</div></div>
-          <span class="tag" id="proposal-count">0</span>
-        </div>
-        <div class="col-body" id="proposal-col"></div>
-      </div>
-    </section>
+    <section class="columns" id="module-columns"></section>
 
     <section class="doc-panel">
       <div class="doc-meta" id="doc-meta">未选择文档</div>
@@ -437,6 +409,81 @@
       const action = path ? `<button data-doc="${escapeHtml(path)}">打开</button>` : "";
       return `<div class="item"><div class="item-title"><span>${escapeHtml(title)}</span>${action}</div><div class="item-meta">${escapeHtml(meta)}</div>${body ? `<div class="item-body">${escapeHtml(body)}</div>` : ""}</div>`;
     }
+    const moduleView = {
+      "00_规则": { count: "rules-count", title: "00_规则", sub: "AI读取 / 敏感信息 / Git协作 / 审核 / 阶段边界" },
+      "01_项目": { count: "handoff-count", title: "01_项目", sub: "AI工作台 / StartPack / 当前状态 / 页面编号" },
+      "03_工作流": { count: "workflow-count", title: "03_工作流", sub: "接手 / 会议沉淀 / 测试Agent / 资源申请" },
+      "04_资源登记": { count: "resource-count", title: "04_资源登记", sub: "页面角标 / 端口 / 电脑环境 / secret / 服务器" },
+      "05_待审核": { count: "proposal-count", title: "05_待审核", sub: "记忆提案 / Skill提案 / 资源变更提案" },
+      "07_实战索引": { count: "index-count", title: "07_实战索引", sub: "别名 / 页面 / 技能 / 窗口 / 字段 / 连接信息" },
+      "08_导入资料": { count: "import-count", title: "08_导入资料", sub: "本机项目资料 / 受限资料" },
+      "scripts": { count: "branch-count", title: "scripts", sub: "自检 / 提案生成 / 演示包导出 / 本地面板服务" },
+    };
+    const fileTitle = (path) => path.split("/").pop().replace(/\.(md|py)$/i, "");
+    function fileItems(files) {
+      return files.map((path) => item(fileTitle(path), "文件", path, path)).join("");
+    }
+    function moduleBody(mod) {
+      const intro = item(mod.role, mod.defaultRead, mod.purpose);
+      const files = `<div class="section-label">模块文件</div>${fileItems(mod.files || [])}`;
+      if (mod.module === "01_项目") {
+        return `${intro}<div class="section-label">新窗口接手包</div><div id="handoff-col"></div>${files}`;
+      }
+      if (mod.module === "03_工作流") {
+        const flow = (state.structure?.workflow || []).map((step, index) => `${index + 1}. ${step}`).join("\n");
+        return `${intro}${item("执行链路", "从需求到沉淀", flow)}${files}`;
+      }
+      if (mod.module === "04_资源登记") {
+        return `${intro}<div id="resource-col"></div>${files}`;
+      }
+      if (mod.module === "05_待审核") {
+        return `${intro}<div id="proposal-col"></div>${files}`;
+      }
+      if (mod.module === "07_实战索引") {
+        return `${intro}<div id="index-col"></div>${files}`;
+      }
+      if (mod.module === "08_导入资料") {
+        return `${intro}
+          <div class="item soft">
+            <div class="item-title"><span>本机 MD 导入</span><button id="refresh-candidates">刷新候选</button></div>
+            <div class="query-row"><select id="candidate-select"></select><button id="import-selected" class="primary">导入</button></div>
+            <label class="chip"><input id="restricted-import" type="checkbox"> 作为受限资料导入</label>
+            <div class="item-meta"><button id="open-import-index">打开导入目录说明</button></div>
+          </div>
+          <div id="import-col"></div>${files}`;
+      }
+      if (mod.module === "scripts") {
+        return `${intro}
+          <div class="item soft">
+            <div class="item-title"><span>Git 与自检</span><button id="refresh-git" class="primary">刷新 Git</button></div>
+            <div class="split2"><button id="run-check">系统自检</button><button id="open-readme">README</button></div>
+            <div class="item-meta" id="git-line">读取中</div>
+          </div>
+          <div id="git-col"></div>${files}`;
+      }
+      return `${intro}${files}`;
+    }
+    function renderNumberedColumns() {
+      const modules = state.structure?.modules || [];
+      $("#module-map").innerHTML = modules.map((mod) => {
+        const code = mod.module === "scripts" ? "py" : mod.module.slice(0, 2);
+        return `<button class="module-tile" data-module="${escapeHtml(mod.module)}">
+          <span class="module-code">${escapeHtml(code)}</span>
+          <div class="module-name">${escapeHtml(mod.module)}</div>
+          <div class="module-role">${escapeHtml(mod.role)}</div>
+        </button>`;
+      }).join("");
+      $("#module-columns").innerHTML = modules.map((mod) => {
+        const view = moduleView[mod.module] || { count: "", title: mod.module, sub: mod.role };
+        return `<div class="col" data-column="${escapeHtml(mod.module)}">
+          <div class="col-head">
+            <div><div class="col-title">${escapeHtml(view.title)}</div><div class="col-sub">${escapeHtml(view.sub)}</div></div>
+            <span class="tag ok" id="${escapeHtml(view.count)}">${(mod.files || []).length}</span>
+          </div>
+          <div class="col-body">${moduleBody(mod)}</div>
+        </div>`;
+      }).join("");
+    }
     function renderSummary() {
       const check = state.status?.check?.code === 0 ? "CHECK_PASS" : "CHECK_FAIL";
       const gitDirty = state.git?.status?.length || 0;
@@ -454,7 +501,7 @@
       ].map(([name, value, sub]) => `<div class="card"><div class="card-head"><span>${name}</span><span class="tag">${sub}</span></div><div class="card-value">${value}</div></div>`).join("");
       $("#top-meta").textContent = `${state.status?.repo || ""} · ${state.git?.current || "-"} · ${state.status?.gitLatest || ""}`;
       $("#top-notice").textContent = `候选 ${state.candidates?.candidates?.length || 0} · 导入 ${imported} · 待审核 ${proposals} · 工作区 ${gitDirty ? "有改动" : "干净"}`;
-      $("#git-line").textContent = state.git?.remote || "未配置远端";
+      if ($("#git-line")) $("#git-line").textContent = state.git?.remote || "未配置远端";
     }
     function renderHandoff() {
       const data = state.startPack;
@@ -473,9 +520,9 @@
     }
     function renderIndex() {
       const data = state.index;
-      $("#index-count").textContent = data ? 1 : 0;
-      if (!data) {
-        $("#index-col").innerHTML = "<div class='empty'>输入口语后查询</div>";
+      $("#index-count").textContent = data?.query ? 1 : 0;
+      if (!data?.query) {
+        $("#index-col").innerHTML = "<div class='empty'>输入页面编号、技能编号、窗口别名或字段名后查询。</div>";
         return;
       }
       $("#index-col").innerHTML = [
@@ -545,7 +592,7 @@
         api("/api/import-candidates"),
       ]);
       Object.assign(state, { status, structure, git, resources, imported, proposals, candidates, startPack: null });
-      renderSummary(); renderHandoff(); renderIndex(); renderImported(); renderGit(); renderResources(); renderProposals(); renderCandidates();
+      renderNumberedColumns(); renderSummary(); renderHandoff(); renderIndex(); renderImported(); renderGit(); renderResources(); renderProposals(); renderCandidates();
       if (!$("#doc-body").textContent) openDoc("README.md");
     }
     async function generateHandoff() {
@@ -600,11 +647,16 @@
     document.addEventListener("click", async (event) => {
       const button = event.target.closest("button");
       if (!button) return;
+      if (button.dataset.module) {
+        const target = [...document.querySelectorAll(".col")].find((col) => col.dataset.column === button.dataset.module);
+        target?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+        return;
+      }
       if (button.dataset.doc) openDoc(button.dataset.doc);
       if (button.dataset.query) { $("#query").value = button.dataset.query; resolveQuery(button.dataset.query); }
       if (button.id === "refresh-all") loadAll();
       if (button.id === "run-handoff") generateHandoff();
-      if (button.id === "resolve-query") resolveQuery($("#query").value || "页面22");
+      if (button.id === "resolve-query") resolveQuery($("#query").value);
       if (button.id === "refresh-candidates") { state.candidates = await api("/api/import-candidates"); renderCandidates(); }
       if (button.id === "import-selected") importSelected();
       if (button.id === "open-import-index") openDoc("08_导入资料/README.md");
@@ -614,7 +666,8 @@
       if (button.id === "create-demo-proposal") createProposal(false);
       if (button.id === "create-real-proposal") createProposal(true);
     });
-    $("#candidate-select").addEventListener("change", () => {
+    document.addEventListener("change", (event) => {
+      if (event.target?.id !== "candidate-select") return;
       $("#restricted-import").checked = $("#candidate-select").selectedOptions[0]?.dataset.restricted === "1";
     });
     loadAll().catch((error) => {

@@ -40,23 +40,10 @@ STRUCTURE = [
             "01_项目/AI工作台/StartPack.md",
             "01_项目/AI工作台/当前状态.md",
             "01_项目/AI工作台/接手说明.md",
+            "01_项目/AI工作台/页面编号.md",
             "01_项目/AI工作台/历史证据.md",
         ],
         "defaultRead": "接手项目时读取",
-    },
-    {
-        "module": "07_实战索引",
-        "role": "刘大式快速定位层",
-        "purpose": "把页面22、技能1、小测、第四级窗口等口语映射成标准对象。",
-        "files": [
-            "07_实战索引/别名词典.md",
-            "07_实战索引/页面索引.md",
-            "07_实战索引/技能索引.md",
-            "07_实战索引/窗口索引.md",
-            "07_实战索引/字段契约索引.md",
-            "07_实战索引/连接信息索引.md",
-        ],
-        "defaultRead": "页面、技能、字段、窗口任务优先读取",
     },
     {
         "module": "03_工作流",
@@ -96,6 +83,20 @@ STRUCTURE = [
         "defaultRead": "审核任务读取",
     },
     {
+        "module": "07_实战索引",
+        "role": "刘大式快速定位层",
+        "purpose": "把页面编号、技能编号、窗口别名、字段契约等口语映射成标准对象。",
+        "files": [
+            "07_实战索引/别名词典.md",
+            "07_实战索引/页面索引.md",
+            "07_实战索引/技能索引.md",
+            "07_实战索引/窗口索引.md",
+            "07_实战索引/字段契约索引.md",
+            "07_实战索引/连接信息索引.md",
+        ],
+        "defaultRead": "页面、技能、字段、窗口任务优先读取",
+    },
+    {
         "module": "08_导入资料",
         "role": "本机资料接入层",
         "purpose": "导入本机项目 MD/TXT，普通资料进项目资料，敏感资料进受限资料。",
@@ -103,6 +104,19 @@ STRUCTURE = [
             "08_导入资料/README.md",
         ],
         "defaultRead": "资料追溯和整理时读取",
+    },
+    {
+        "module": "scripts",
+        "role": "本地工具层",
+        "purpose": "提供自检、提案生成、演示包导出、本地面板服务。",
+        "files": [
+            "scripts/check_memory_repo.py",
+            "scripts/new_proposal.py",
+            "scripts/demo_server.py",
+            "scripts/export_demo_packet.py",
+            "scripts/run_demo_check.py",
+        ],
+        "defaultRead": "演示、检查和交付时读取",
     },
 ]
 
@@ -324,7 +338,21 @@ def document_payload(rel: str) -> dict[str, object]:
 
 
 def resolve_payload(query: str) -> dict[str, object]:
-    query = query.strip() or "页面22"
+    query = query.strip()
+    if not query:
+        return {
+            "query": "",
+            "alias": None,
+            "standard": "",
+            "page": None,
+            "skill": None,
+            "route": [
+                "输入页面编号 / 技能编号 / 窗口别名 / 字段名",
+                "07_实战索引/别名词典.md",
+                "07_实战索引/页面索引.md 或 技能索引.md",
+                "项目 StartPack / 当前状态 / 具体文档",
+            ],
+        }
     aliases = parse_table("07_实战索引/别名词典.md")
     pages = parse_table("07_实战索引/页面索引.md")
     skills = parse_table("07_实战索引/技能索引.md")
@@ -639,7 +667,7 @@ class DemoHandler(BaseHTTPRequestHandler):
             self.send_json(start_pack_payload())
             return
         if path == "/api/resolve":
-            query = parse_qs(parsed.query).get("q", ["页面22"])[0]
+            query = parse_qs(parsed.query).get("q", [""])[0]
             self.send_json(resolve_payload(query))
             return
         if path == "/api/check":
