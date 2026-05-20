@@ -19,11 +19,14 @@
       --shadow: 0 1px 2px rgba(15, 23, 42, .06);
     }
     * { box-sizing: border-box; }
+    html { min-height: 100%; overflow-y: auto; }
     body {
       margin: 0;
       background: var(--bg);
       color: var(--ink);
       font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100%;
+      overflow-y: auto;
     }
     button, input, select, textarea { font: inherit; }
     button {
@@ -193,6 +196,7 @@
       grid-template-columns: var(--content-width) 8px minmax(320px, 1fr);
       gap: 0;
       min-height: var(--workbench-height);
+      align-items: start;
     }
     .resizer {
       align-self: stretch;
@@ -222,12 +226,10 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
-      height: var(--workbench-height);
       min-height: var(--workbench-height);
-      max-height: var(--workbench-height);
-      overflow: hidden;
+      overflow: visible;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto;
     }
     .col-head {
       padding: 10px 12px;
@@ -241,7 +243,7 @@
     .col-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
     .col-body {
       padding: 10px;
-      overflow: auto;
+      overflow: visible;
       min-height: 0;
     }
     .item {
@@ -323,6 +325,12 @@
       display: grid;
       gap: 6px;
     }
+    .tree-group.collapsed::before {
+      display: none;
+    }
+    .tree-group.collapsed .tree-children {
+      display: none;
+    }
     .tree-row {
       width: 100%;
       min-width: 0;
@@ -351,6 +359,12 @@
       border-color: #cbd6e4;
       background: #fff;
       font-weight: 760;
+    }
+    .tree-row.department .tree-code {
+      transition: transform .15s ease;
+    }
+    .tree-group.collapsed .tree-row.department .tree-code {
+      transform: rotate(-90deg);
     }
     .tree-row.project {
       width: calc(100% - 22px);
@@ -404,6 +418,38 @@
       display: grid;
       gap: 7px;
       margin-top: 8px;
+    }
+    .hierarchy-shell {
+      padding: 0;
+      overflow: hidden;
+    }
+    .hierarchy-shell > summary {
+      list-style: none;
+      display: grid;
+      grid-template-columns: minmax(140px, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      padding: 9px 10px;
+      font-weight: 850;
+    }
+    .hierarchy-shell > summary::-webkit-details-marker { display: none; }
+    .hierarchy-shell > summary .summary-arrow {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      transition: transform .15s ease;
+    }
+    .hierarchy-shell:not([open]) > summary .summary-arrow {
+      transform: rotate(-90deg);
+    }
+    .hierarchy-content {
+      border-top: 1px solid var(--line);
+      padding: 9px 10px 10px;
     }
     .hierarchy-row {
       display: grid;
@@ -472,10 +518,9 @@
       border-radius: 8px;
       box-shadow: var(--shadow);
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      height: var(--workbench-height);
+      grid-template-rows: auto auto;
       min-height: var(--workbench-height);
-      overflow: hidden;
+      overflow: visible;
     }
     .doc-meta {
       border-bottom: 1px solid var(--line);
@@ -486,7 +531,7 @@
     .doc-body {
       padding: 12px;
       max-height: none;
-      overflow: auto;
+      overflow: visible;
       white-space: pre-wrap;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 12px;
@@ -519,14 +564,14 @@
       display: grid;
       grid-template-columns: minmax(190px, 260px) minmax(0, 1fr);
       min-height: 100%;
-      height: 100%;
+      height: auto;
     }
     .github-sidebar {
       min-width: 0;
       border-right: 1px solid var(--line);
       background: #f6f8fa;
       padding: 10px 9px;
-      overflow: auto;
+      overflow: visible;
     }
     .github-sidebar-title {
       display: flex;
@@ -587,7 +632,7 @@
     }
     .github-main {
       min-width: 0;
-      overflow: auto;
+      overflow: visible;
       padding: 12px;
     }
     .github-breadcrumb {
@@ -761,7 +806,6 @@
     @media (max-width: 1200px) {
       .doc-panel { grid-template-columns: 1fr; }
       .entry-head { display: block; }
-      .col { max-height: var(--workbench-height); }
       .doc-panel { min-height: var(--workbench-height); }
       .github-view,
       .github-content-grid,
@@ -855,7 +899,7 @@
   </main>
 
   <script>
-    const state = { status: null, structure: null, projects: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目", projectSearch: "" };
+    const state = { status: null, structure: null, projects: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目", projectSearch: "", collapsedDepartments: new Set(JSON.parse(localStorage.getItem("memory-collapsed-departments") || "[]")) };
     const $ = (selector) => document.querySelector(selector);
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch]));
     const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max));
@@ -942,38 +986,44 @@
       const files = `<div class="section-label">模块文件</div>${fileItems(mod.files || [])}`;
       if (mod.module === "01_项目") {
         return `${intro}
-          <div class="item soft">
-            <div class="item-title"><span>自定义分级</span><span class="tag">写入 01_项目</span></div>
-            <div class="hierarchy-list">
-              <div class="hierarchy-row">
-                <div class="hierarchy-label"><strong>新增部门</strong><span>部门层级</span></div>
-                <div class="hierarchy-fields three">
-                  <input id="dept-name" placeholder="新增部门名">
-                  <input id="dept-owner" placeholder="负责人">
-                  <input id="dept-summary" placeholder="部门说明">
+          <details class="item soft hierarchy-shell">
+            <summary>
+              <span>自定义分级</span>
+              <span class="tag">写入 01_项目</span>
+              <span class="summary-arrow">▾</span>
+            </summary>
+            <div class="hierarchy-content">
+              <div class="hierarchy-list">
+                <div class="hierarchy-row">
+                  <div class="hierarchy-label"><strong>新增部门</strong><span>部门层级</span></div>
+                  <div class="hierarchy-fields three">
+                    <input id="dept-name" placeholder="新增部门名">
+                    <input id="dept-owner" placeholder="负责人">
+                    <input id="dept-summary" placeholder="部门说明">
+                  </div>
+                  <button id="add-department" class="primary">新增</button>
                 </div>
-                <button id="add-department" class="primary">新增</button>
-              </div>
-              <div class="hierarchy-row">
-                <div class="hierarchy-label"><strong>新增项目</strong><span>归入部门</span></div>
-                <div class="hierarchy-fields three">
-                  <select id="project-department"></select>
-                  <input id="project-name" placeholder="新增项目名">
-                  <input id="project-repo" placeholder="Git 仓库地址">
+                <div class="hierarchy-row">
+                  <div class="hierarchy-label"><strong>新增项目</strong><span>归入部门</span></div>
+                  <div class="hierarchy-fields three">
+                    <select id="project-department"></select>
+                    <input id="project-name" placeholder="新增项目名">
+                    <input id="project-repo" placeholder="Git 仓库地址">
+                  </div>
+                  <button id="add-project" class="primary">新增</button>
                 </div>
-                <button id="add-project" class="primary">新增</button>
-              </div>
-              <div class="hierarchy-row">
-                <div class="hierarchy-label"><strong>删除归档</strong><span>安全移除</span></div>
-                <div class="hierarchy-fields two">
-                  <select id="delete-project-select"></select>
-                  <select id="delete-department-select"></select>
+                <div class="hierarchy-row">
+                  <div class="hierarchy-label"><strong>删除归档</strong><span>安全移除</span></div>
+                  <div class="hierarchy-fields two">
+                    <select id="delete-project-select"></select>
+                    <select id="delete-department-select"></select>
+                  </div>
+                  <button id="delete-selected" class="danger">执行</button>
                 </div>
-                <button id="delete-selected" class="danger">执行</button>
               </div>
+              <div class="action-line" id="project-action-line">部门可删除；项目删除会移入 99_归档/旧项目记录。</div>
             </div>
-            <div class="action-line" id="project-action-line">部门可删除；项目删除会移入 99_归档/旧项目记录。</div>
-          </div>
+          </details>
           <div class="section-label">部门项目导航</div>
           <div class="project-filter">
             <button id="show-all-projects">显示全部</button>
@@ -1099,6 +1149,16 @@
         return deptMatched || projects.length ? { ...dept, projects } : null;
       }).filter(Boolean);
     }
+    function departmentKey(dept) {
+      return dept.overview || dept.name || "";
+    }
+    function toggleDepartment(key) {
+      if (!key) return;
+      if (state.collapsedDepartments.has(key)) state.collapsedDepartments.delete(key);
+      else state.collapsedDepartments.add(key);
+      localStorage.setItem("memory-collapsed-departments", JSON.stringify([...state.collapsedDepartments]));
+      renderProjects();
+    }
     function renderProjects() {
       const col = $("#project-col");
       const count = $("#project-count");
@@ -1114,9 +1174,12 @@
         renderProjectControls();
         return;
       }
-      col.innerHTML = `<div class="project-tree">${departments.map((dept) => `
-        <div class="tree-group">
-          <div class="tree-row department" data-doc="${escapeHtml(dept.overview)}" role="button" tabindex="0">
+      col.innerHTML = `<div class="project-tree">${departments.map((dept) => {
+        const key = departmentKey(dept);
+        const collapsed = state.collapsedDepartments.has(key);
+        return `
+        <div class="tree-group${collapsed ? " collapsed" : ""}">
+          <div class="tree-row department" data-dept-toggle="${escapeHtml(key)}" role="button" tabindex="0" aria-expanded="${collapsed ? "false" : "true"}">
             <span class="tree-code">▾</span>
             <span class="tree-title">${escapeHtml(dept.name)}</span>
             <span class="tree-meta">${escapeHtml(dept.status)} · ${escapeHtml(dept.owner)}</span>
@@ -1160,7 +1223,7 @@
             `}
           </div>
         </div>
-      `).join("")}</div>`;
+      `}).join("")}</div>`;
       renderProjectControls();
     }
     function renderProjectControls() {
@@ -1603,6 +1666,11 @@
       renderSummary();
     }
     document.addEventListener("click", async (event) => {
+      const deptToggle = event.target.closest("[data-dept-toggle]");
+      if (deptToggle) {
+        toggleDepartment(deptToggle.dataset.deptToggle);
+        return;
+      }
       const packTarget = event.target.closest("[data-project-pack]");
       if (packTarget) {
         loadProjectPack(packTarget.dataset.projectPack).catch((error) => { setPlainDocument("<b>读取失败</b>", String(error.message || error)); });
@@ -1660,6 +1728,12 @@
         return;
       }
       if (!["Enter", " "].includes(event.key)) return;
+      const deptToggle = event.target.closest("[data-dept-toggle]");
+      if (deptToggle) {
+        event.preventDefault();
+        toggleDepartment(deptToggle.dataset.deptToggle);
+        return;
+      }
       const docTarget = event.target.closest("[data-doc]");
       if (!docTarget) return;
       event.preventDefault();
