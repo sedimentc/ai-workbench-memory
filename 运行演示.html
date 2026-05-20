@@ -188,15 +188,17 @@
     .tag.blue { background: var(--blue-soft); color: #1d4ed8; }
     .workbench {
       --content-width: 540px;
+      --workbench-height: 520px;
       display: grid;
       grid-template-columns: var(--content-width) 8px minmax(320px, 1fr);
       gap: 0;
+      min-height: var(--workbench-height);
     }
     .resizer {
       align-self: stretch;
       cursor: col-resize;
       position: relative;
-      min-height: 360px;
+      min-height: var(--workbench-height);
     }
     .resizer::before {
       content: "";
@@ -220,7 +222,9 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
-      max-height: calc(100vh - 270px);
+      height: var(--workbench-height);
+      min-height: var(--workbench-height);
+      max-height: var(--workbench-height);
       overflow: hidden;
       display: grid;
       grid-template-rows: auto 1fr;
@@ -238,7 +242,7 @@
     .col-body {
       padding: 10px;
       overflow: auto;
-      min-height: 360px;
+      min-height: 0;
     }
     .item {
       border: 1px solid var(--line);
@@ -459,7 +463,8 @@
       box-shadow: var(--shadow);
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      min-height: calc(100vh - 270px);
+      height: var(--workbench-height);
+      min-height: var(--workbench-height);
       overflow: hidden;
     }
     .doc-meta {
@@ -481,8 +486,8 @@
     @media (max-width: 1200px) {
       .doc-panel { grid-template-columns: 1fr; }
       .entry-head { display: block; }
-      .col { max-height: none; }
-      .doc-panel { min-height: 360px; }
+      .col { max-height: var(--workbench-height); }
+      .doc-panel { min-height: var(--workbench-height); }
     }
     @media (max-width: 760px) {
       .workbench { grid-template-columns: 1fr; }
@@ -583,6 +588,15 @@
     function paneWidth(name, fallback) {
       const raw = getComputedStyle($("#workbench")).getPropertyValue(name);
       return Number.parseFloat(raw) || fallback;
+    }
+    function fitWorkbenchHeight() {
+      requestAnimationFrame(() => {
+        const workbench = $("#workbench");
+        if (!workbench) return;
+        const top = workbench.getBoundingClientRect().top;
+        const height = Math.max(260, Math.floor(window.innerHeight - top - 14));
+        workbench.style.setProperty("--workbench-height", `${height}px`);
+      });
     }
     function initResizers() {
       restorePaneWidths();
@@ -730,6 +744,7 @@
           </div>
           <div class="col-body">${moduleBody(mod)}</div>
         </div>`;
+      fitWorkbenchHeight();
     }
     function renderActiveModuleData() {
       renderProjects();
@@ -1179,6 +1194,7 @@
       openDoc(docTarget.dataset.doc);
     });
     initResizers();
+    window.addEventListener("resize", fitWorkbenchHeight);
     loadAll().catch((error) => {
       if ($("#top-meta")) $("#top-meta").textContent = "读取失败";
       $("#doc-body").textContent = String(error);
