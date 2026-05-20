@@ -492,12 +492,287 @@
       font-size: 12px;
       background: #fbfcfe;
     }
+    .doc-body.github-body {
+      padding: 0;
+      white-space: normal;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      background: #fff;
+    }
+    .github-meta-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 850;
+    }
+    .github-meta-sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .github-view {
+      display: grid;
+      grid-template-columns: minmax(190px, 260px) minmax(0, 1fr);
+      min-height: 100%;
+      height: 100%;
+    }
+    .github-sidebar {
+      min-width: 0;
+      border-right: 1px solid var(--line);
+      background: #f6f8fa;
+      padding: 10px 9px;
+      overflow: auto;
+    }
+    .github-sidebar-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      font-weight: 850;
+      margin-bottom: 9px;
+    }
+    .github-branch {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      padding: 7px 8px;
+      margin-bottom: 8px;
+      color: #344054;
+      font-weight: 700;
+    }
+    .github-file-search {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      padding: 7px 8px;
+      margin-bottom: 8px;
+    }
+    .github-file-list {
+      display: grid;
+      gap: 2px;
+    }
+    .github-file-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+      min-height: 30px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      padding: 5px 6px;
+      text-align: left;
+      color: var(--ink);
+    }
+    .github-file-row:hover,
+    .github-file-row.active {
+      background: #eaf2ff;
+    }
+    .github-file-row span:last-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .github-main {
+      min-width: 0;
+      overflow: auto;
+      padding: 12px;
+    }
+    .github-breadcrumb {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 15px;
+      font-weight: 850;
+      margin-bottom: 10px;
+    }
+    .github-breadcrumb .repo {
+      color: #0969da;
+    }
+    .github-commit {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+    }
+    .github-avatar {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 850;
+    }
+    .github-commit-message {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .github-commit-message b { color: var(--ink); margin-right: 6px; }
+    .github-sha {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+    .github-tabs {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      border-radius: 7px 7px 0 0;
+      background: #f6f8fa;
+      padding: 7px 9px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .github-tab {
+      border-radius: 6px;
+      padding: 5px 10px;
+    }
+    .github-tab.active {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .github-content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+      gap: 10px;
+      align-items: start;
+    }
+    .github-code-box {
+      border: 1px solid var(--line);
+      border-radius: 0 0 7px 7px;
+      background: #fff;
+      overflow: auto;
+    }
+    .github-code-table {
+      width: 100%;
+      border-collapse: collapse;
+      font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .github-code-table td {
+      padding: 0 10px;
+      vertical-align: top;
+      border: 0;
+    }
+    .github-line-no {
+      width: 1%;
+      min-width: 44px;
+      color: #6e7781;
+      background: #f6f8fa;
+      text-align: right;
+      user-select: none;
+    }
+    .github-line-code {
+      white-space: pre;
+      color: #24292f;
+    }
+    .github-side-card {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .github-side-card h4 {
+      margin: 0 0 7px;
+      font-size: 14px;
+    }
+    .github-history-row,
+    .github-note-row {
+      display: grid;
+      gap: 3px;
+      padding: 7px 0;
+      border-top: 1px solid #edf0f5;
+    }
+    .github-history-row:first-of-type,
+    .github-note-row:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+    .github-history-row strong,
+    .github-note-row strong {
+      font-size: 12px;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .github-history-row span,
+    .github-note-row span {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+    .github-dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .github-card-list {
+      display: grid;
+      gap: 6px;
+    }
+    .github-pill-row {
+      display: grid;
+      grid-template-columns: minmax(90px, .32fr) minmax(70px, .22fr) minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 7px 8px;
+      background: #fff;
+    }
+    .github-pill-row b,
+    .github-pill-row span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .github-pill-row span {
+      color: var(--muted);
+      font-size: 12px;
+    }
     .empty { color: var(--muted); text-align: center; padding: 28px 10px; }
     @media (max-width: 1200px) {
       .doc-panel { grid-template-columns: 1fr; }
       .entry-head { display: block; }
       .col { max-height: var(--workbench-height); }
       .doc-panel { min-height: var(--workbench-height); }
+      .github-view,
+      .github-content-grid,
+      .github-dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .github-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        max-height: 210px;
+      }
     }
     @media (max-width: 760px) {
       .workbench { grid-template-columns: 1fr; }
@@ -994,18 +1269,162 @@
       if (!select) return;
       select.innerHTML = candidates.slice(0, 80).map((row) => `<option value="${escapeHtml(row.path)}" data-restricted="${row.restrictedHint ? "1" : "0"}">${escapeHtml(row.name)} · ${Math.round(row.size / 1024)}KB</option>`).join("");
     }
+    function setPlainDocument(metaHtml, bodyText) {
+      $("#doc-meta").innerHTML = metaHtml;
+      const body = $("#doc-body");
+      body.className = "doc-body";
+      body.textContent = bodyText || "";
+    }
+    function setGithubDocument(metaHtml, bodyHtml) {
+      $("#doc-meta").innerHTML = metaHtml;
+      const body = $("#doc-body");
+      body.className = "doc-body github-body";
+      body.innerHTML = bodyHtml || "";
+    }
+    function repoName() {
+      const remote = state.git?.remote || "";
+      const match = remote.match(/github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?(?:\s|$)/);
+      return match ? match[1].replace(/\.git$/, "") : "ai-workbench-memory";
+    }
+    function fileIcon(path) {
+      if (String(path || "").endsWith(".md")) return "□";
+      if (String(path || "").endsWith(".py")) return "py";
+      if (String(path || "").endsWith(".html")) return "ht";
+      return "◇";
+    }
+    function renderGithubSidebar(files, selectedPath, branch) {
+      const rows = (files || []).map((file) => {
+        const active = file.path === selectedPath ? " active" : "";
+        return `<button class="github-file-row${active}" data-doc="${escapeHtml(file.path)}" title="${escapeHtml(file.path)}"><span>${escapeHtml(fileIcon(file.path))}</span><span>${escapeHtml(file.name || file.path)}</span></button>`;
+      }).join("");
+      return `<aside class="github-sidebar">
+        <div class="github-sidebar-title"><span>▣</span><span>Files</span></div>
+        <div class="github-branch"><span>⑂</span><span>${escapeHtml(branch || "main")}</span></div>
+        <div class="github-file-search">Go to file</div>
+        <div class="github-file-list">${rows || `<div class="empty">暂无同级文件</div>`}</div>
+      </aside>`;
+    }
+    function renderGithubCommit(commit, fallbackMessage = "暂无提交记录") {
+      const author = commit?.author || "本机";
+      const message = commit?.message || fallbackMessage;
+      const date = commit?.date || "-";
+      const sha = commit?.short || "";
+      return `<div class="github-commit">
+        <div class="github-avatar">${escapeHtml(author.slice(0, 1).toUpperCase() || "G")}</div>
+        <div class="github-commit-message"><b>${escapeHtml(author)}</b>${escapeHtml(message)}</div>
+        <div class="github-sha">${escapeHtml(sha)} ${escapeHtml(date)}</div>
+      </div>`;
+    }
+    function renderGithubCode(content) {
+      const lines = String(content || "").replace(/\r\n/g, "\n").split("\n");
+      const rendered = lines.map((line, index) => `<tr><td class="github-line-no">${index + 1}</td><td class="github-line-code">${escapeHtml(line || " ")}</td></tr>`).join("");
+      return `<div class="github-code-box"><table class="github-code-table">${rendered}</table></div>`;
+    }
+    function renderGithubHistory(history, status, diffStat) {
+      const rows = (history || []).map((row) => `<div class="github-history-row">
+        <strong>${escapeHtml(row.message || row.short || "commit")}</strong>
+        <span>${escapeHtml(row.author || "-")} · ${escapeHtml(row.date || "-")} · ${escapeHtml(row.short || "")}</span>
+      </div>`).join("");
+      const statusRows = (status || []).map((line) => `<div class="github-history-row"><strong>${escapeHtml(line)}</strong><span>working tree</span></div>`).join("");
+      return `<div class="github-side-card">
+        <h4>修改记录</h4>
+        ${rows || `<div class="github-history-row"><strong>暂无提交记录</strong><span>可能是新文件或未提交文件</span></div>`}
+      </div>
+      <div class="github-side-card">
+        <h4>工作区变更</h4>
+        ${statusRows || `<div class="github-history-row"><strong>干净</strong><span>当前路径没有未提交变更</span></div>`}
+        ${diffStat ? `<div class="github-history-row"><strong>Diff Stat</strong><span>${escapeHtml(diffStat)}</span></div>` : ""}
+      </div>`;
+    }
+    function renderGithubNotes(notes) {
+      const rows = (notes || []).filter((row) => row.value !== undefined && row.value !== "").map((row) => `<div class="github-note-row">
+        <strong>${escapeHtml(row.label)}</strong>
+        <span>${escapeHtml(row.value)}</span>
+      </div>`).join("");
+      return `<div class="github-side-card"><h4>备注</h4>${rows || `<div class="github-note-row"><strong>无备注</strong><span>该文件未登记额外信息</span></div>`}</div>`;
+    }
+    function renderGithubFileView(data, overrides = {}) {
+      const path = overrides.path || data.path || "未命名.md";
+      const content = overrides.content ?? data.body ?? "";
+      const branch = overrides.branch || data.current || state.git?.current || "main";
+      const history = overrides.history || data.history || [];
+      const latest = overrides.latestCommit || data.latestCommit || history[0] || {};
+      const files = overrides.files || data.siblings || [];
+      const meta = data.frontmatter || {};
+      const notes = overrides.notes || [
+        ...Object.entries(meta).map(([label, value]) => ({ label, value })),
+        { label: "路径", value: path },
+        { label: "敏感等级", value: data.restricted ? "受限脱敏" : meta.sensitivity || "未标记" },
+      ];
+      const repo = repoName();
+      const parts = path.split("/");
+      const fileName = parts.pop() || path;
+      const metaHtml = `<div class="github-meta-title"><span>${escapeHtml(repo)} / ${escapeHtml(fileName)}</span><span class="tag">${escapeHtml(branch)}</span></div><div class="github-meta-sub">${escapeHtml(path)}</div>`;
+      const bodyHtml = `<div class="github-view">
+        ${renderGithubSidebar(files, path, branch)}
+        <main class="github-main">
+          <div class="github-breadcrumb"><span class="repo">${escapeHtml(repo)}</span><span>/</span><span>${parts.map(escapeHtml).join(" / ")}</span><span>/</span><span>${escapeHtml(fileName)}</span></div>
+          ${renderGithubCommit(latest, overrides.commitFallback || "文件尚无提交备注")}
+          <div class="github-tabs"><span class="github-tab active">Code</span><span class="github-tab">修改记录 ${history.length}</span><span class="github-tab">备注</span></div>
+          <div class="github-content-grid">
+            ${renderGithubCode(content)}
+            <aside>${renderGithubHistory(history, data.status || [], data.diffStat || "")}${renderGithubNotes(notes)}</aside>
+          </div>
+        </main>
+      </div>`;
+      setGithubDocument(metaHtml, bodyHtml);
+    }
+    function renderGithubCard(title, rows) {
+      return `<div class="github-side-card"><h4>${escapeHtml(title)}</h4><div class="github-card-list">${(rows || []).length ? rows.map((row) => `<div class="github-pill-row"><b>${escapeHtml(row.title)}</b><span>${escapeHtml(row.meta || "")}</span><span>${escapeHtml(row.body || "")}</span></div>`).join("") : `<div class="empty">暂无数据</div>`}</div></div>`;
+    }
+    function renderProjectCodeView(data) {
+      const branch = data.current || "main";
+      const project = data.project || {};
+      const history = data.recentCommitObjects || [];
+      const latest = data.latestCommit || history[0] || {};
+      const repo = repoName();
+      const branches = (data.branches || []).map((row) => ({ title: row.active ? `* ${row.name}` : row.name, meta: String(row.commit || "").slice(0, 12), body: row.message || "" }));
+      const statusRows = (data.projectStatus || []).map((line) => ({ title: line, meta: "project", body: "未提交变更" }));
+      const allStatusRows = (data.allStatus || []).map((line) => ({ title: line, meta: "repo", body: "工作区" }));
+      const commits = history.map((row) => ({ title: row.short || row.commit, meta: `${row.author || "-"} · ${row.date || "-"}`, body: row.message || "" }));
+      const notes = [
+        { label: "部门", value: project.department },
+        { label: "负责人", value: project.owner },
+        { label: "状态", value: project.status },
+        { label: "备注", value: project.note },
+        { label: "本地路径", value: project.localPath },
+        { label: "Git仓库", value: project.repo },
+      ];
+      const metaHtml = `<div class="github-meta-title"><span>${escapeHtml(repo)} / ${escapeHtml(project.name || "项目代码")}</span><span class="tag">${escapeHtml(branch)}</span></div><div class="github-meta-sub">Git 分支 / 修改记录 / 工作区</div>`;
+      const bodyHtml = `<div class="github-view">
+        ${renderGithubSidebar(data.fileTree || [], "", branch)}
+        <main class="github-main">
+          <div class="github-breadcrumb"><span class="repo">${escapeHtml(repo)}</span><span>/</span><span>${escapeHtml(project.localPath || "")}</span></div>
+          ${renderGithubCommit(latest, "项目路径暂无提交备注")}
+          <div class="github-tabs"><span class="github-tab active">Code</span><span class="github-tab">Branches ${(data.branches || []).length}</span><span class="github-tab">修改记录 ${history.length}</span><span class="github-tab">备注</span></div>
+          <div class="github-dashboard-grid">
+            ${renderGithubCard("分支", branches)}
+            ${renderGithubCard("项目修改记录", commits)}
+            ${renderGithubCard("项目工作区变更", statusRows)}
+            ${renderGithubCard("全仓库工作区变更", allStatusRows)}
+          </div>
+          <div class="github-content-grid" style="margin-top:10px">
+            ${renderGithubCode(data.diffStat || "当前项目路径没有 diff stat。")}
+            <aside>${renderGithubNotes(notes)}</aside>
+          </div>
+        </main>
+      </div>`;
+      setGithubDocument(metaHtml, bodyHtml);
+    }
     async function openDoc(path) {
       const data = await api(`/api/document?path=${encodeURIComponent(path)}`);
-      const meta = data.frontmatter || {};
-      $("#doc-meta").innerHTML = `<b>${escapeHtml(data.path)}</b><br>${escapeHtml(meta.type || "-")} · ${escapeHtml(meta.status || "-")} · ${escapeHtml(meta.sensitivity || "-")}${data.restricted ? " · 受限脱敏" : ""}`;
-      $("#doc-body").textContent = data.body;
+      renderGithubFileView(data);
     }
     function showProjectDetail(localPath) {
       const found = findProject(localPath);
       if (!found) return;
       const { dept, project } = found;
-      $("#doc-meta").innerHTML = `<b>${escapeHtml(dept.name)} / ${escapeHtml(project.name)}</b><br>项目文件 · ${escapeHtml(project.updatedAt || "-")} · ${escapeHtml(project.modifier || "-")}`;
-      $("#doc-body").textContent = [
+      const body = [
         `# ${project.name}`,
         "",
         `部门：${dept.name}`,
@@ -1024,39 +1443,52 @@
         "## 新 AI 接手",
         "点击“一键获取”，生成当前最新项目接手包。",
       ].join("\n");
+      renderGithubFileView({
+        path: `${project.localPath}/项目档案.md`,
+        body,
+        current: state.git?.current || "main",
+        siblings: project.mdFiles || [],
+        history: [],
+        latestCommit: { author: project.modifier || "Git", date: project.updatedAt || "-", message: project.note || "项目档案" },
+        status: [],
+        diffStat: "",
+        frontmatter: {},
+      }, {
+        notes: [
+          { label: "部门", value: dept.name },
+          { label: "负责人", value: project.owner },
+          { label: "状态", value: project.status },
+          { label: "备注", value: project.note },
+          { label: "Git仓库", value: project.repo },
+          { label: "本地路径", value: project.localPath },
+        ],
+      });
     }
     async function loadProjectPack(localPath) {
       const data = await api(`/api/project-pack?localPath=${encodeURIComponent(localPath)}`);
-      $("#doc-meta").innerHTML = `<b>${escapeHtml(data.project.name)} · 一键获取</b><br>最新项目接手包 · ${escapeHtml(data.project.updatedAt || "-")} · ${escapeHtml(data.project.modifier || "-")}`;
-      $("#doc-body").textContent = data.body;
+      renderGithubFileView({
+        path: `${data.project.localPath}/新窗口接手包.md`,
+        body: data.body,
+        current: state.git?.current || "main",
+        siblings: data.files || [],
+        history: [],
+        latestCommit: { author: data.project.modifier || "Git", date: data.project.updatedAt || "-", message: "生成最新项目接手包" },
+        status: [],
+        diffStat: "",
+        frontmatter: {},
+      }, {
+        notes: [
+          { label: "部门", value: data.project.department },
+          { label: "负责人", value: data.project.owner },
+          { label: "项目路径", value: data.project.localPath },
+          { label: "用途", value: "给新 AI 线程快速接手" },
+        ],
+      });
       if ($("#top-notice")) $("#top-notice").textContent = `${data.project.name} 接手包已生成，可直接给新 AI 线程读取`;
     }
     async function loadProjectCode(localPath) {
       const data = await api(`/api/project-code?localPath=${encodeURIComponent(localPath)}`);
-      const branches = (data.branches || []).map((row) => `${row.active ? "*" : " "} ${row.name} ${String(row.commit || "").slice(0, 12)} ${row.message || ""}`);
-      $("#doc-meta").innerHTML = `<b>${escapeHtml(data.project.name)} · 项目代码</b><br>Git分支 / 修改记录 / 工作区`;
-      $("#doc-body").textContent = [
-        `# ${data.project.name} 项目代码`,
-        "",
-        `当前分支：${data.current || "-"}`,
-        `Git仓库：${data.project.repo || "-"}`,
-        `本地路径：${data.project.localPath || "-"}`,
-        "",
-        "## 分支",
-        branches.length ? branches.join("\n") : "无",
-        "",
-        "## 项目修改记录",
-        (data.recentCommits || []).length ? data.recentCommits.join("\n") : "暂无该项目路径下的提交记录",
-        "",
-        "## 项目工作区变更",
-        (data.projectStatus || []).length ? data.projectStatus.join("\n") : "该项目路径工作区干净",
-        "",
-        "## 全仓库工作区变更",
-        (data.allStatus || []).length ? data.allStatus.join("\n") : "工作区干净",
-        "",
-        "## Diff Stat",
-        data.diffStat || "无",
-      ].join("\n");
+      renderProjectCodeView(data);
     }
     async function loadAll() {
       const [status, structure, projects, git, resources, imported, proposals, candidates] = await Promise.all([
@@ -1083,8 +1515,7 @@
       state.index = await api(`/api/resolve?q=${encodeURIComponent(value)}`);
       state.activeModule = "07_实战索引";
       renderNumberedColumns(); renderActiveModuleData();
-      $("#doc-meta").innerHTML = "<b>索引结果</b>";
-      $("#doc-body").textContent = JSON.stringify(state.index, null, 2);
+      setPlainDocument("<b>索引结果</b>", JSON.stringify(state.index, null, 2));
     }
     async function importSelected() {
       const select = $("#candidate-select");
@@ -1163,25 +1594,23 @@
       state.proposals = await api("/api/proposals");
       state.activeModule = "05_待审核";
       renderNumberedColumns(); renderActiveModuleData(); renderSummary();
-      $("#doc-meta").innerHTML = `<b>${escapeHtml(result.path)}</b>`;
-      $("#doc-body").textContent = result.content;
+      setPlainDocument(`<b>${escapeHtml(result.path)}</b>`, result.content);
     }
     async function runCheck() {
       const data = await api("/api/check");
-      $("#doc-meta").innerHTML = "<b>系统自检</b>";
-      $("#doc-body").textContent = data.check.output;
+      setPlainDocument("<b>系统自检</b>", data.check.output);
       state.status = await api("/api/status");
       renderSummary();
     }
     document.addEventListener("click", async (event) => {
       const packTarget = event.target.closest("[data-project-pack]");
       if (packTarget) {
-        loadProjectPack(packTarget.dataset.projectPack).catch((error) => { $("#doc-body").textContent = String(error.message || error); });
+        loadProjectPack(packTarget.dataset.projectPack).catch((error) => { setPlainDocument("<b>读取失败</b>", String(error.message || error)); });
         return;
       }
       const codeTarget = event.target.closest("[data-project-code]");
       if (codeTarget) {
-        loadProjectCode(codeTarget.dataset.projectCode).catch((error) => { $("#doc-body").textContent = String(error.message || error); });
+        loadProjectCode(codeTarget.dataset.projectCode).catch((error) => { setPlainDocument("<b>读取失败</b>", String(error.message || error)); });
         return;
       }
       const projectTarget = event.target.closest("[data-project-detail]");
@@ -1240,7 +1669,7 @@
     window.addEventListener("resize", fitWorkbenchHeight);
     loadAll().catch((error) => {
       if ($("#top-meta")) $("#top-meta").textContent = "读取失败";
-      $("#doc-body").textContent = String(error);
+      setPlainDocument("<b>读取失败</b>", String(error));
     });
   </script>
 </body>

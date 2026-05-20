@@ -397,6 +397,83 @@ def git_latest_for_path(rel: str) -> dict[str, str]:
     return {"modifier": "待确认", "updatedAt": "-"}
 
 
+def git_history_for_path(rel: str, limit: int = 8) -> list[dict[str, str]]:
+    rel = clean_table_value(rel)
+    if not rel:
+        return []
+    lines = run_lines([
+        "git",
+        "log",
+        f"--max-count={limit}",
+        "--format=%h%x1f%H%x1f%an%x1f%ad%x1f%s",
+        "--date=short",
+        "--",
+        rel,
+    ])
+    history: list[dict[str, str]] = []
+    for line in lines:
+        parts = line.split("\x1f", 4)
+        if len(parts) != 5:
+            continue
+        short, full, author, date, message = parts
+        history.append({
+            "short": short,
+            "commit": full,
+            "author": author,
+            "date": date,
+            "message": message,
+        })
+    return history
+
+
+def git_status_for_path(rel: str) -> list[str]:
+    rel = clean_table_value(rel)
+    if not rel:
+        return run_lines(["git", "status", "--short"])
+    return run_lines(["git", "status", "--short", "--", rel])
+
+
+TEXT_FILE_SUFFIXES = {
+    ".css",
+    ".csv",
+    ".html",
+    ".js",
+    ".json",
+    ".md",
+    ".py",
+    ".sh",
+    ".txt",
+    ".yml",
+    ".yaml",
+}
+
+
+def file_tree_payload(rel: str, limit: int = 80) -> list[dict[str, str]]:
+    rel = clean_table_value(rel)
+    base = safe_relative_path(rel) if rel else ROOT
+    if base.is_file():
+        base = base.parent
+    if not base.exists() or not base.is_dir():
+        return []
+    files: list[dict[str, str]] = []
+    for path in sorted(base.rglob("*")):
+        if len(files) >= limit:
+            break
+        if any(part in path.parts for part in (".git", ".github", ".demo_runtime", "dist", "__pycache__")):
+            continue
+        if path.is_dir():
+            continue
+        if path.suffix.lower() not in TEXT_FILE_SUFFIXES:
+            continue
+        item_rel = str(path.relative_to(ROOT))
+        files.append({
+            "name": path.name,
+            "path": item_rel,
+            "directory": str(path.parent.relative_to(ROOT)),
+        })
+    return files
+
+
 def project_markdown_files(project: dict[str, str]) -> list[dict[str, object]]:
     ordered = [
         project.get("overview", ""),
@@ -589,15 +666,19 @@ def project_pack_payload(local_path: str) -> dict[str, object]:
 def project_code_payload(local_path: str) -> dict[str, object]:
     project = find_project(local_path)
     rel = clean_table_value(str(project.get("localPath", "")))
+    history = git_history_for_path(rel, 12)
     return {
         "project": project,
         "current": run(["git", "branch", "--show-current"])["output"],
         "remote": run(["git", "remote", "-v"])["output"],
         "branches": git_payload()["branches"],
-        "recentCommits": run_lines(["git", "log", "--oneline", "--decorate", "-10", "--", rel]),
-        "projectStatus": [line for line in run_lines(["git", "status", "--short"]) if rel in line],
+        "latestCommit": history[0] if history else {},
+        "recentCommitObjects": history,
+        "recentCommits": [f"{row['short']} {row['message']}" for row in history],
+        "projectStatus": git_status_for_path(rel),
         "allStatus": run_lines(["git", "status", "--short"]),
         "diffStat": run(["git", "diff", "--stat", "--", rel])["output"],
+        "fileTree": file_tree_payload(rel),
     }
 
 
@@ -816,18 +897,26 @@ def document_payload(rel: str) -> dict[str, object]:
     path = safe_relative_path(rel)
     if not path.exists() or not path.is_file():
         raise FileNotFoundError(rel)
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8", errors="ignore")
     data = parse_frontmatter(text)
     restricted = RESTRICTED_DOC.search(text) is not None
     if restricted:
         body = "# 受限凭据文档\n\n该文档允许核心成员记录真实协作凭据，面板默认不展示正文。需要查看请在本机文件中打开，并确认仓库访问范围。"
     else:
         body = strip_frontmatter(text)
+    path_rel = str(path.relative_to(ROOT))
+    history = git_history_for_path(path_rel, 8)
     return {
-        "path": str(path.relative_to(ROOT)),
+        "path": path_rel,
         "frontmatter": data,
         "restricted": restricted,
         "body": body,
+        "current": run(["git", "branch", "--show-current"])["output"],
+        "history": history,
+        "latestCommit": history[0] if history else {},
+        "status": git_status_for_path(path_rel),
+        "diffStat": run(["git", "diff", "--stat", "--", path_rel])["output"],
+        "siblings": file_tree_payload(str(path.parent.relative_to(ROOT)), 80),
     }
 
 
