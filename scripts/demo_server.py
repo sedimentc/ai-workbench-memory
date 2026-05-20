@@ -384,6 +384,50 @@ def git_payload() -> dict[str, object]:
     }
 
 
+def git_latest_for_path(rel: str) -> dict[str, str]:
+    rel = clean_table_value(rel)
+    output = str(run(["git", "log", "-1", "--format=%an|%ad", "--date=short", "--", rel])["output"])
+    if "|" in output:
+        author, _, updated = output.partition("|")
+        return {"modifier": author.strip() or "Git", "updatedAt": updated.strip() or "-"}
+    path = ROOT / rel
+    if path.exists():
+        stat_path = max((p for p in path.rglob("*") if p.is_file()), key=lambda p: p.stat().st_mtime, default=path) if path.is_dir() else path
+        return {"modifier": "本机未提交", "updatedAt": datetime.fromtimestamp(stat_path.stat().st_mtime).strftime("%Y-%m-%d")}
+    return {"modifier": "待确认", "updatedAt": "-"}
+
+
+def project_markdown_files(project: dict[str, str]) -> list[dict[str, object]]:
+    ordered = [
+        project.get("overview", ""),
+        project.get("startPack", ""),
+        project.get("current", ""),
+        project.get("handoff", ""),
+    ]
+    local_path = project.get("localPath", "")
+    project_dir = ROOT / local_path if local_path else None
+    if project_dir and project_dir.exists() and project_dir.is_dir():
+        ordered.extend(str(path.relative_to(ROOT)) for path in sorted(project_dir.glob("*.md")))
+    seen: set[str] = set()
+    files: list[dict[str, object]] = []
+    for rel in ordered:
+        if not rel or rel in seen or not (ROOT / rel).exists():
+            continue
+        seen.add(rel)
+        summary = file_summary(rel)
+        summary.update(git_latest_for_path(rel))
+        files.append(summary)
+    return files
+
+
+def attach_project_metadata(project: dict[str, object]) -> dict[str, object]:
+    local_path = str(project.get("localPath", ""))
+    project.update(git_latest_for_path(local_path))
+    project["mdFiles"] = project_markdown_files({key: str(value) for key, value in project.items()})
+    project["codeRoot"] = "."
+    return project
+
+
 def structure_payload() -> dict[str, object]:
     return {
         "workflow": [
@@ -424,7 +468,7 @@ def project_catalog_payload() -> dict[str, object]:
                 if local_path:
                     assigned_paths.add(local_path)
                 projects.append(
-                    {
+                    attach_project_metadata({
                         "name": project.get("项目", ""),
                         "status": project.get("状态", ""),
                         "repo": project.get("Git仓库", ""),
@@ -436,7 +480,7 @@ def project_catalog_payload() -> dict[str, object]:
                         "owner": project.get("负责人", ""),
                         "note": project.get("备注", ""),
                         "protected": project.get("本地路径", "") == "01_项目/AI工作台",
-                    }
+                    })
                 )
             summary = extract_section(read_text(overview), "部门定位", 260)
         else:
@@ -461,7 +505,7 @@ def project_catalog_payload() -> dict[str, object]:
         if not all((project_dir / name).exists() for name in ["项目总览.md", "StartPack.md", "当前状态.md", "接手说明.md"]):
             continue
         uncategorized.append(
-            {
+            attach_project_metadata({
                 "name": project_dir.name,
                 "status": "current",
                 "repo": git_payload().get("remote", ""),
@@ -472,7 +516,7 @@ def project_catalog_payload() -> dict[str, object]:
                 "handoff": f"{rel}/接手说明.md",
                 "owner": "",
                 "note": "未写入部门文档",
-            }
+            })
         )
     if uncategorized:
         departments.append(
@@ -489,6 +533,71 @@ def project_catalog_payload() -> dict[str, object]:
         "index": file_summary(department_index) if (ROOT / department_index).exists() else {},
         "departments": departments,
         "projectCount": sum(len(row["projects"]) for row in departments),
+    }
+
+
+def find_project(local_path: str) -> dict[str, object]:
+    local_path = clean_table_value(local_path)
+    for department in project_catalog_payload()["departments"]:
+        for project in department.get("projects", []):
+            if project.get("localPath") == local_path:
+                result = dict(project)
+                result["department"] = department.get("name", "")
+                result["departmentOverview"] = department.get("overview", "")
+                return result
+    raise FileNotFoundError(local_path)
+
+
+def project_pack_payload(local_path: str) -> dict[str, object]:
+    project = find_project(local_path)
+    now = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %z")
+    sections = [
+        f"# {project.get('name')} 新窗口接手包",
+        "",
+        f"- 生成时间：{now}",
+        f"- 部门：{project.get('department')}",
+        f"- 项目路径：`{project.get('localPath')}`",
+        f"- Git仓库：`{project.get('repo') or '-'}`",
+        f"- 最近更新：{project.get('updatedAt')} · {project.get('modifier')}",
+        "",
+        "## AI读取顺序",
+        "",
+        "1. 先读本接手包。",
+        "2. 再按下方来源文件进入具体 MD。",
+        "3. 涉及代码、分支、修改记录时，点击面板里的 `项目代码`。",
+        "",
+    ]
+    for file in project.get("mdFiles", []):
+        rel = str(file.get("path", ""))
+        if not rel:
+            continue
+        text = read_text(rel)
+        sections.extend(
+            [
+                "---",
+                "",
+                f"## 来源文件：`{rel}`",
+                "",
+                strip_frontmatter(text),
+                "",
+            ]
+        )
+    body = "\n".join(sections).rstrip() + "\n"
+    return {"project": project, "body": body, "files": project.get("mdFiles", [])}
+
+
+def project_code_payload(local_path: str) -> dict[str, object]:
+    project = find_project(local_path)
+    rel = clean_table_value(str(project.get("localPath", "")))
+    return {
+        "project": project,
+        "current": run(["git", "branch", "--show-current"])["output"],
+        "remote": run(["git", "remote", "-v"])["output"],
+        "branches": git_payload()["branches"],
+        "recentCommits": run_lines(["git", "log", "--oneline", "--decorate", "-10", "--", rel]),
+        "projectStatus": [line for line in run_lines(["git", "status", "--short"]) if rel in line],
+        "allStatus": run_lines(["git", "status", "--short"]),
+        "diffStat": run(["git", "diff", "--stat", "--", rel])["output"],
     }
 
 
@@ -1043,6 +1152,20 @@ class DemoHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/projects":
             self.send_json(project_catalog_payload())
+            return
+        if path == "/api/project-pack":
+            local_path = parse_qs(parsed.query).get("localPath", [""])[0]
+            try:
+                self.send_json(project_pack_payload(local_path))
+            except (FileNotFoundError, ValueError) as exc:
+                self.send_json({"error": str(exc)}, status=404)
+            return
+        if path == "/api/project-code":
+            local_path = parse_qs(parsed.query).get("localPath", [""])[0]
+            try:
+                self.send_json(project_code_payload(local_path))
+            except (FileNotFoundError, ValueError) as exc:
+                self.send_json({"error": str(exc)}, status=404)
             return
         if path == "/api/document":
             rel = parse_qs(parsed.query).get("path", ["README.md"])[0]
