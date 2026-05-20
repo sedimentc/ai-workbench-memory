@@ -12,6 +12,7 @@
 - [ ] 工作流
 - [ ] 技能库
 - [ ] 待审核提案
+- [ ] 实战索引
 - [ ] 模板
 
 ## 来源
@@ -21,6 +22,7 @@
 ## 风险
 
 - [ ] 不涉及敏感信息
+- [ ] 涉及核心成员受限凭据，已确认文档为 `sensitivity: restricted` 且 `credential_allowed: true`
 - [ ] 不涉及页面编号或端口资源
 - [ ] 涉及资源变更，已检查冲突
 - [ ] 涉及旧规则替代，已标记 deprecated 或写明替代关系
@@ -29,6 +31,6 @@
 
 - [ ] 已运行 `python3 scripts/check_memory_repo.py`
 - [ ] 新增 MD 已包含 YAML 头部
-- [ ] 没有写入真实密码/token/API key/cookie
+- [ ] 普通文档没有写入真实密码/token/API key/cookie
+- [ ] 如写入真实凭据，已标注用途、负责人、风险级别和轮换规则
 - [ ] 待审核内容没有直接进入正式规则
-

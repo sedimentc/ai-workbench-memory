@@ -16,6 +16,8 @@ source: 第一版共享 MD 系统落地
 
 第一版采用 GitHub + Markdown 方式落地。MD 是人和 AI 都能读的协作层，不承担最终运行态职责；页面角标发号、窗口心跳、资源锁、Start Pack 自动生成等能力，后续可迁移到中心服务或数据库。
 
+当前已补入刘大 MD 系统里的实战索引能力：口语别名、页面索引、技能索引、项目索引、窗口索引、字段契约索引和连接信息索引。
+
 当前决策：数据库和服务器先不管。后续等确定一台电脑作为服务器后，再做 `memory_service + SQLite + Dashboard`。
 
 ## 当前边界
@@ -32,6 +34,7 @@ source: 第一版共享 MD 系统落地
 - `总览.md`：人和 AI 的导航页。
 - `01_项目/AI工作台/StartPack.md`：AI 工作台项目接手包。
 - `05_待审核/`：所有候选记忆、规则、资源变更先进入这里。
+- `07_实战索引/`：刘大式快速检索层，负责把口语说法映射到页面、技能、项目、窗口和字段。
 - `scripts/check_memory_repo.py`：基础自检脚本。
 - `scripts/new_proposal.py`：生成标准待审核提案。
 - `scripts/export_demo_packet.py`：导出 HTML 和 Markdown 演示包。

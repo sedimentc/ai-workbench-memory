@@ -7,12 +7,12 @@ reviewer: 刘大/老王
 scope: secret 引用
 sensitivity: internal
 last_reviewed: 2026-05-19
-source: 王老师 Secret Ref 思路
+source: 王老师 Secret Ref 思路、刘大受限凭据记录口径
 ---
 
 # secret引用
 
-本文件只登记敏感信息的引用方式，不登记真实值。
+本文件登记敏感信息的引用方式。当前团队口径允许少数核心成员在受限文档记录真实凭据，但普通文档仍优先使用 `secret://...` 引用。
 
 ## 引用格式
 
@@ -37,6 +37,7 @@ secret://liuda/private-channel/tailscale-dashboard-password
 
 ## 规则
 
-- 共享 MD、技能库、证据和提案里都不能写真实值。
-- AI 发现真实值时，要提醒用户改为 secret 引用。
-
+- 普通共享 MD、技能库、证据和提案里不写真实值。
+- 真实值只允许写入 `sensitivity: restricted` 且 `credential_allowed: true` 的文档。
+- AI 发现真实值时，要先判断是否应该写入受限文档；不确定时改为 secret 引用。
+- 当前推荐真实凭据登记位置：`07_实战索引/连接信息索引.md`。

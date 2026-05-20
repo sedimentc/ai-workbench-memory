@@ -6,8 +6,8 @@ owner: 陈纪言
 reviewer: 刘大/老王
 scope: AI工作台
 sensitivity: internal
-last_reviewed: 2026-05-19
-source: 王老师 Start Pack 思路、刘大 AI 工作台会议
+last_reviewed: 2026-05-20
+source: 王老师 Start Pack 思路、刘大 AI 工作台会议、刘大实战索引补强
 ---
 
 # StartPack：AI工作台
@@ -20,6 +20,7 @@ source: 王老师 Start Pack 思路、刘大 AI 工作台会议
 
 - 已有公共 MD 原型。
 - 已有页面角标和编号池规则。
+- 已补入刘大式实战索引层，包括别名、页面、技能、窗口、字段契约和连接信息索引。
 - 已有 AI Workbench / Dashboard 相关页面和观察逻辑。
 - DoneGuard 已封装成 Skill，可作为测试 Agent 的基础。
 - 共享 MD 与技能库的边界正在确认。
@@ -41,7 +42,8 @@ source: 王老师 Start Pack 思路、刘大 AI 工作台会议
 
 ## 已确认规则
 
-- 敏感信息不进共享文档。
+- 普通共享文档不写真实敏感信息；核心成员受限文档可按规则记录必要协作凭据。
+- 页面、技能、窗口、字段、连接信息先查 `07_实战索引/`。
 - 当前事实和历史证据分开。
 - 新窗口优先读 Start Pack。
 - 技能库内容需要有适用场景和验证案例。
@@ -57,4 +59,3 @@ source: 王老师 Start Pack 思路、刘大 AI 工作台会议
 ## 下一步建议
 
 先完成 AI 工作台样板项目，再用一个新 Codex 窗口只读取 `AI入口.md`、`总览.md` 和本 Start Pack，测试是否能在 2 分钟内说清项目状态。
-

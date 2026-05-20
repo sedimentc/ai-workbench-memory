@@ -20,6 +20,11 @@ DEMO_FILES = [
     "README.md",
     "AI入口.md",
     "总览.md",
+    "07_实战索引/README.md",
+    "07_实战索引/别名词典.md",
+    "07_实战索引/页面索引.md",
+    "07_实战索引/技能索引.md",
+    "07_实战索引/连接信息索引.md",
     "01_项目/AI工作台/StartPack.md",
     "01_项目/AI工作台/当前状态.md",
     "01_项目/AI工作台/历史证据.md",
@@ -34,10 +39,25 @@ DEMO_FILES = [
 ]
 
 FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+RESTRICTED_DOC = re.compile(r"(?ms)\A---\n.*?sensitivity:\s*restricted\s*\n.*?credential_allowed:\s*true\s*\n.*?\n---\n")
 
 
 def strip_frontmatter(text: str) -> str:
     return FRONTMATTER.sub("", text, count=1).strip()
+
+
+def redacted_restricted_body(rel: str) -> str:
+    return "\n".join(
+        [
+            "# 受限凭据文档",
+            "",
+            f"`{rel}` 是核心成员受限文档，允许记录必要账号、密码、API key、token 等协作凭据。",
+            "",
+            "演示包不会导出该文件正文，避免真实凭据被复制到 `dist/`。",
+            "",
+            "现场只讲规则：真实凭据只允许写在 `sensitivity: restricted` 且 `credential_allowed: true` 的文档里，并且必须标用途、负责人、风险级别和轮换规则。",
+        ]
+    )
 
 
 def read_demo_sections() -> list[tuple[str, str]]:
@@ -46,7 +66,11 @@ def read_demo_sections() -> list[tuple[str, str]]:
         path = ROOT / rel
         if not path.exists():
             raise SystemExit(f"Missing demo source file: {rel}")
-        sections.append((rel, strip_frontmatter(path.read_text(encoding="utf-8"))))
+        text = path.read_text(encoding="utf-8")
+        if RESTRICTED_DOC.search(text):
+            sections.append((rel, redacted_restricted_body(rel)))
+        else:
+            sections.append((rel, strip_frontmatter(text)))
     return sections
 
 

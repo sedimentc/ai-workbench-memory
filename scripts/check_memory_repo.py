@@ -21,7 +21,7 @@ ALLOWED_STATUS = {
 REQUIRED_KEYS = {"id", "type", "status", "owner", "scope", "sensitivity", "last_reviewed", "source"}
 REQUIRED_PROJECT_FILES = {"项目总览.md", "StartPack.md", "当前状态.md", "接手说明.md"}
 SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b(password|passwd|token|api[_-]?key|secret)\b\s*[:=]\s*['\"]?([A-Za-z0-9_\-./+=]{8,})"
+    r"(?i)(password|passwd|token|api[_-]?key|secret|密码|口令|令牌|凭据)\s*(?:[:=]|\|)\s*`?['\"]?([A-Za-z0-9_\-./+=]{8,})"
 )
 FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 
@@ -67,6 +67,8 @@ def check_frontmatter(files: list[Path]) -> list[str]:
         status = data.get("status")
         if status and status not in ALLOWED_STATUS:
             errors.append(f"{rel}: unsupported status '{status}'")
+        if data.get("credential_allowed", "").strip().lower() == "true" and data.get("sensitivity") != "restricted":
+            errors.append(f"{rel}: credential_allowed requires sensitivity: restricted")
         doc_id = data.get("id")
         if not doc_id:
             continue
@@ -82,12 +84,22 @@ def check_sensitive_values(files: list[Path]) -> list[str]:
     for path in files:
         rel = path.relative_to(ROOT)
         text = path.read_text(encoding="utf-8")
+        data = parse_frontmatter(text) or {}
+        credential_allowed = (
+            data.get("sensitivity") == "restricted"
+            and data.get("credential_allowed", "").strip().lower() == "true"
+        )
         for index, line in enumerate(text.splitlines(), start=1):
             if "secret://" in line:
                 continue
             match = SECRET_ASSIGNMENT.search(line)
             if match:
-                errors.append(f"{rel}:{index}: possible sensitive value assigned to {match.group(1)}")
+                if credential_allowed:
+                    continue
+                errors.append(
+                    f"{rel}:{index}: possible sensitive value assigned to {match.group(1)}; "
+                    "use a restricted document with credential_allowed: true"
+                )
     return errors
 
 
