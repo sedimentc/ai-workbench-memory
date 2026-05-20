@@ -95,6 +95,15 @@ STRUCTURE = [
         ],
         "defaultRead": "审核任务读取",
     },
+    {
+        "module": "08_导入资料",
+        "role": "本机资料接入层",
+        "purpose": "导入本机项目 MD/TXT，普通资料进项目资料，敏感资料进受限资料。",
+        "files": [
+            "08_导入资料/README.md",
+        ],
+        "defaultRead": "资料追溯和整理时读取",
+    },
 ]
 
 
@@ -148,6 +157,25 @@ def run(command: list[str]) -> dict[str, object]:
         check=False,
     )
     return {"code": proc.returncode, "output": proc.stdout.strip()}
+
+
+def run_lines(command: list[str]) -> list[str]:
+    output = str(run(command)["output"])
+    return [line for line in output.splitlines() if line.strip()]
+
+
+def file_summary(rel: str) -> dict[str, object]:
+    path = ROOT / rel
+    text = path.read_text(encoding="utf-8", errors="ignore") if path.exists() else ""
+    data = parse_frontmatter(text)
+    title_match = re.search(r"^#\s+(.+)$", strip_frontmatter(text), re.MULTILINE)
+    return {
+        "path": rel,
+        "title": title_match.group(1) if title_match else Path(rel).stem,
+        "status": data.get("status", ""),
+        "type": data.get("type", ""),
+        "sensitivity": data.get("sensitivity", ""),
+    }
 
 
 def markdown_files_count() -> int:
@@ -223,6 +251,35 @@ def status_payload() -> dict[str, object]:
     }
 
 
+def git_payload() -> dict[str, object]:
+    branches = []
+    for line in run_lines(["git", "branch", "--all", "--verbose", "--no-abbrev"]):
+        active = line.startswith("*")
+        cleaned = line[2:].strip() if active else line.strip()
+        parts = cleaned.split(None, 2)
+        if not parts:
+            continue
+        branches.append(
+            {
+                "active": active,
+                "name": parts[0],
+                "commit": parts[1] if len(parts) > 1 else "",
+                "message": parts[2] if len(parts) > 2 else "",
+            }
+        )
+    commits = []
+    for line in run_lines(["git", "log", "--oneline", "--decorate", "-8"]):
+        commit, _, message = line.partition(" ")
+        commits.append({"commit": commit, "message": message})
+    return {
+        "current": run(["git", "branch", "--show-current"])["output"],
+        "branches": branches,
+        "commits": commits,
+        "status": run_lines(["git", "status", "--short"]),
+        "remote": run(["git", "remote", "-v"])["output"],
+    }
+
+
 def structure_payload() -> dict[str, object]:
     return {
         "workflow": [
@@ -236,6 +293,14 @@ def structure_payload() -> dict[str, object]:
         ],
         "modules": STRUCTURE,
         "files": markdown_files(),
+        "core": [
+            file_summary("AI入口.md"),
+            file_summary("总览.md"),
+            file_summary("01_项目/AI工作台/StartPack.md"),
+            file_summary("07_实战索引/别名词典.md"),
+            file_summary("04_资源登记/页面角标编号.md"),
+            file_summary("05_待审核/README.md"),
+        ],
     }
 
 
@@ -317,6 +382,95 @@ def resources_payload() -> dict[str, object]:
         "secretRefs": parse_table("04_资源登记/secret引用.md"),
         "serverCandidates": parse_table("04_资源登记/服务器候选.md"),
     }
+
+
+def imported_payload() -> dict[str, object]:
+    imported = []
+    root = ROOT / "08_导入资料"
+    if root.exists():
+        for path in sorted(root.rglob("*.md")):
+            if path.name == "README.md":
+                continue
+            imported.append(file_summary(str(path.relative_to(ROOT))))
+    return {"imported": imported}
+
+
+def candidate_payload() -> dict[str, object]:
+    roots = [Path("/Users/sediment/Downloads"), Path("/Users/sediment/Documents")]
+    candidates: list[dict[str, object]] = []
+    for base in roots:
+        if not base.exists():
+            continue
+        for path in sorted(base.rglob("*")):
+            if len(candidates) >= 220:
+                break
+            if not path.is_file() or path.suffix.lower() not in {".md", ".txt"}:
+                continue
+            if ROOT in path.resolve().parents:
+                continue
+            if ".git" in path.parts or "node_modules" in path.parts:
+                continue
+            stat = path.stat()
+            candidates.append(
+                {
+                    "path": str(path),
+                    "name": path.name,
+                    "size": stat.st_size,
+                    "mtime": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M"),
+                    "restrictedHint": any(
+                        word in path.name.lower()
+                        for word in ["manual", "secret", "token", "password", "账号", "密码", "shared_program"]
+                    ),
+                }
+            )
+    return {"candidates": candidates}
+
+
+def import_material_payload(body: bytes) -> dict[str, object]:
+    data = json.loads(body.decode("utf-8") or "{}")
+    source = Path(str(data.get("path") or "")).expanduser()
+    if not source.exists() or not source.is_file():
+        raise FileNotFoundError(str(source))
+    title = str(data.get("title") or source.stem).strip()
+    restricted = bool(data.get("restricted"))
+    dest_dir = ROOT / "08_导入资料" / ("受限资料" if restricted else "项目资料")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    slug = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff]+", "-", title).strip("-") or "untitled"
+    dest = dest_dir / f"{slug}.md"
+    counter = 2
+    while dest.exists():
+        dest = dest_dir / f"{slug}-{counter}.md"
+        counter += 1
+    now = datetime.now().astimezone().strftime("%Y-%m-%d")
+    material_id = "IMPORT-" + datetime.now().astimezone().strftime("%Y%m%d%H%M%S")
+    text = source.read_text(encoding="utf-8", errors="replace").rstrip()
+    credential = "credential_allowed: true\n" if restricted else ""
+    content = f"""---
+id: {material_id}
+type: imported_material
+status: current
+owner: 陈纪言
+reviewer: 刘大/老王
+scope: 导入资料
+sensitivity: {'restricted' if restricted else 'internal'}
+{credential}last_reviewed: {now}
+source: {source}
+---
+
+# {title}
+
+## 来源
+
+```text
+{source}
+```
+
+## 原文
+
+{text}
+"""
+    dest.write_text(content, encoding="utf-8")
+    return {"path": str(dest.relative_to(ROOT)), "restricted": restricted}
 
 
 def proposal_list_payload() -> dict[str, object]:
@@ -491,8 +645,17 @@ class DemoHandler(BaseHTTPRequestHandler):
         if path == "/api/check":
             self.send_json({"check": run(["python3", "scripts/check_memory_repo.py"])})
             return
+        if path == "/api/git":
+            self.send_json(git_payload())
+            return
         if path == "/api/resources":
             self.send_json(resources_payload())
+            return
+        if path == "/api/imported":
+            self.send_json(imported_payload())
+            return
+        if path == "/api/import-candidates":
+            self.send_json(candidate_payload())
             return
         if path == "/api/proposals":
             self.send_json(proposal_list_payload())
@@ -511,6 +674,12 @@ class DemoHandler(BaseHTTPRequestHandler):
         body = self.rfile.read(length)
         if parsed.path == "/api/proposal":
             self.send_json(proposal_payload(body))
+            return
+        if parsed.path == "/api/import-material":
+            try:
+                self.send_json(import_material_payload(body))
+            except (FileNotFoundError, OSError, ValueError) as exc:
+                self.send_json({"error": str(exc)}, status=400)
             return
         self.send_error(404)
 
