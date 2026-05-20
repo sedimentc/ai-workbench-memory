@@ -135,7 +135,7 @@
 <body>
   <header>
     <h1>AI 工作台共享 MD 系统演示包</h1>
-    <p>生成时间：2026-05-20T12:32:17+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
+    <p>生成时间：2026-05-20T12:38:02+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
   </header>
   <main>
     <nav><a href="#section-1">1. 10_启动材料/当前系统状态.md</a>
@@ -149,17 +149,19 @@
 <a href="#section-9">9. 07_实战索引/技能索引.md</a>
 <a href="#section-10">10. 07_实战索引/连接信息索引.md</a>
 <a href="#section-11">11. 08_导入资料/README.md</a>
-<a href="#section-12">12. 01_项目/AI工作台/StartPack.md</a>
-<a href="#section-13">13. 01_项目/AI工作台/当前状态.md</a>
-<a href="#section-14">14. 01_项目/AI工作台/历史证据.md</a>
-<a href="#section-15">15. 05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</a>
-<a href="#section-16">16. 04_资源登记/页面角标编号.md</a>
-<a href="#section-17">17. 04_资源登记/服务器候选.md</a>
-<a href="#section-18">18. 10_启动材料/功能对照表.md</a>
-<a href="#section-19">19. 10_启动材料/二期中心服务路线图.md</a>
-<a href="#section-20">20. 10_启动材料/逐分钟演示讲稿.md</a>
-<a href="#section-21">21. 10_启动材料/现场答辩问答.md</a>
-<a href="#section-22">22. 10_启动材料/新窗口演示提示词.md</a></nav>
+<a href="#section-12">12. 01_项目/部门总览.md</a>
+<a href="#section-13">13. 01_项目/AI工作台部门/部门总览.md</a>
+<a href="#section-14">14. 01_项目/AI工作台/StartPack.md</a>
+<a href="#section-15">15. 01_项目/AI工作台/当前状态.md</a>
+<a href="#section-16">16. 01_项目/AI工作台/历史证据.md</a>
+<a href="#section-17">17. 05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</a>
+<a href="#section-18">18. 04_资源登记/页面角标编号.md</a>
+<a href="#section-19">19. 04_资源登记/服务器候选.md</a>
+<a href="#section-20">20. 10_启动材料/功能对照表.md</a>
+<a href="#section-21">21. 10_启动材料/二期中心服务路线图.md</a>
+<a href="#section-22">22. 10_启动材料/逐分钟演示讲稿.md</a>
+<a href="#section-23">23. 10_启动材料/现场答辩问答.md</a>
+<a href="#section-24">24. 10_启动材料/新窗口演示提示词.md</a></nav>
     <div>
 <section id="section-1">
   <div class="source">来源文件：<code>10_启动材料/当前系统状态.md</code></div>
@@ -823,7 +825,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <pre class="table-line">| 目录 | 用途 | 默认是否给 AI 读取 |</pre>
 <pre class="table-line">| --- | --- | --- |</pre>
 <pre class="table-line">| `00_规则/` | 全局读取、安全、Git、状态、元信息规则 | 是 |</pre>
-<pre class="table-line">| `01_项目/` | 项目总览、Start Pack、当前状态、接手说明 | 是 |</pre>
+<pre class="table-line">| `01_项目/` | 部门分类、项目总览、Start Pack、当前状态、接手说明 | 是 |</pre>
 <pre class="table-line">| `02_技能库/` | 程序、运营、策划等技能库，肖明负责 | 按任务读取 |</pre>
 <pre class="table-line">| `03_工作流/` | 新窗口接手、会议沉淀、测试 Agent、资源申请流程 | 按任务读取 |</pre>
 <pre class="table-line">| `04_资源登记/` | 页面角标、端口、电脑环境、secret 引用 | 按任务读取 |</pre>
@@ -836,7 +838,7 @@ python3 scripts/run_demo_check.py</code></pre>
 
 <h2>第一版样板项目</h2>
 
-<p>当前先以 `01_项目/AI工作台/` 作为样板项目，验证新 AI 窗口是否能通过 `AI入口.md` 和 `StartPack.md` 快速接手。</p>
+<p>当前先以 `01_项目/AI工作台部门/` 作为部门样板，以 `01_项目/AI工作台/` 作为项目样板，验证新 AI 窗口是否能通过部门导航、`AI入口.md` 和 `StartPack.md` 快速接手。</p>
 
 <h2>常用脚本</h2>
 
@@ -1032,6 +1034,56 @@ python3 scripts/run_demo_check.py</code></pre>
 </section>
 
 <section id="section-12">
+  <div class="source">来源文件：<code>01_项目/部门总览.md</code></div>
+  <h1>部门总览</h1>
+
+<p>`01_项目/` 按部门组织项目入口。AI 不需要自己扫全目录，先读本文件，再进入对应部门文档。</p>
+
+<h2>部门列表</h2>
+
+<pre class="table-line">| 部门 | 部门文档 | 项目数 | 负责人 | 状态 | 说明 |</pre>
+<pre class="table-line">| --- | --- | --- | --- | --- | --- |</pre>
+<pre class="table-line">| AI工作台部门 | `01_项目/AI工作台部门/部门总览.md` | 1 | 陈纪言 | current | 负责 AI 工作台、共享 MD、演示面板和接手流程样板 |</pre>
+
+<h2>使用规则</h2>
+
+<p class="bullet">- 新增部门时，先新增部门文档，再把部门写入本表。</p>
+<p class="bullet">- 部门文档只做项目导航，不替代项目自己的 `StartPack.md` 和 `当前状态.md`。</p>
+<p class="bullet">- 项目仓库地址、项目入口、负责人、状态必须能从部门文档里一眼看到。</p>
+<p class="bullet">- 团队成员自己的试验分支和个人改法不直接写进部门正式项目，先走 `05_待审核/`。</p>
+</section>
+
+<section id="section-13">
+  <div class="source">来源文件：<code>01_项目/AI工作台部门/部门总览.md</code></div>
+  <h1>AI工作台部门</h1>
+
+<h2>部门定位</h2>
+
+<p>本部门负责把刘大的多电脑、多 AI 窗口协作流程沉淀成可以接手、可以审核、可以用 Git 协作的共享 MD 系统。</p>
+
+<h2>负责项目</h2>
+
+<pre class="table-line">| 项目 | 状态 | Git仓库 | 本地路径 | 项目总览 | StartPack | 当前状态 | 接手说明 | 负责人 | 备注 |</pre>
+<pre class="table-line">| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |</pre>
+<pre class="table-line">| AI工作台 | current | `https://github.com/sedimentc/ai-workbench-memory.git` | `01_项目/AI工作台` | `01_项目/AI工作台/项目总览.md` | `01_项目/AI工作台/StartPack.md` | `01_项目/AI工作台/当前状态.md` | `01_项目/AI工作台/接手说明.md` | 陈纪言 | 第一版样板项目，保留原路径不搬迁 |</pre>
+
+<h2>AI读取方式</h2>
+
+<p>1. 先读 `01_项目/部门总览.md`，确认项目属于哪个部门。</p>
+<p>2. 再读本部门 `部门总览.md`，确认项目仓库、本地路径和负责人。</p>
+<p>3. 进入目标项目后，按 `StartPack.md`、`当前状态.md`、`接手说明.md` 接手。</p>
+<p>4. 涉及页面编号、端口、电脑环境时，再读 `04_资源登记/`。</p>
+<p>5. 涉及沉淀或改规则时，只能进入 `05_待审核/`，不能直接改正式规则。</p>
+
+<h2>Git协作方式</h2>
+
+<p class="bullet">- 主分支保存已审核、全员可用的部门项目入口。</p>
+<p class="bullet">- 每个人可以从主分支拉出个人分支，试自己的项目记录、提示词或流程。</p>
+<p class="bullet">- 个人分支里的好用改动，先提交提案或 PR，由负责人审核后合入主分支。</p>
+<p class="bullet">- 不通用但有参考价值的内容，可以单独成文档并标注适用场景后再合入。</p>
+</section>
+
+<section id="section-14">
   <div class="source">来源文件：<code>01_项目/AI工作台/StartPack.md</code></div>
   <h1>StartPack：AI工作台</h1>
 
@@ -1084,7 +1136,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>先完成 AI 工作台样板项目，再用一个新 Codex 窗口只读取 `AI入口.md`、`总览.md` 和本 Start Pack，测试是否能在 2 分钟内说清项目状态。</p>
 </section>
 
-<section id="section-13">
+<section id="section-15">
   <div class="source">来源文件：<code>01_项目/AI工作台/当前状态.md</code></div>
   <h1>当前状态：AI工作台</h1>
 
@@ -1126,7 +1178,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p class="bullet">- 如果个人实验长期不清理，会变成噪音。</p>
 </section>
 
-<section id="section-14">
+<section id="section-16">
   <div class="source">来源文件：<code>01_项目/AI工作台/历史证据.md</code></div>
   <h1>历史证据：AI工作台</h1>
 
@@ -1145,7 +1197,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>需要从历史证据提炼规则时，必须先写入 `05_待审核/记忆提案/`，审核后才能进入正式文档。</p>
 </section>
 
-<section id="section-15">
+<section id="section-17">
   <div class="source">来源文件：<code>05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</code></div>
   <h1>新窗口必须先读StartPack</h1>
 
@@ -1222,7 +1274,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>待审核</p>
 </section>
 
-<section id="section-16">
+<section id="section-18">
   <div class="source">来源文件：<code>04_资源登记/页面角标编号.md</code></div>
   <h1>页面角标编号</h1>
 
@@ -1278,7 +1330,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <pre class="table-line">| 33 | AI工作台 | 高频队列排查 | `/dashboard/ai-workbench-high-poll-queue.html` | current |</pre>
 </section>
 
-<section id="section-17">
+<section id="section-19">
   <div class="source">来源文件：<code>04_资源登记/服务器候选.md</code></div>
   <h1>服务器候选</h1>
 
@@ -1312,7 +1364,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>4. 将页面编号、端口、待审核记忆逐步迁移到中心服务。</p>
 </section>
 
-<section id="section-18">
+<section id="section-20">
   <div class="source">来源文件：<code>10_启动材料/功能对照表.md</code></div>
   <h1>功能对照表</h1>
 
@@ -1382,7 +1434,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>当前版本与之前讨论框架一致，但只做到第一阶段：共享、接手、待审核、实战索引、资源登记、Git 协作和自检。完整中心服务、Dashboard、自动发号、窗口状态自动生成和语义检索增强属于第二阶段。</p>
 </section>
 
-<section id="section-19">
+<section id="section-21">
   <div class="source">来源文件：<code>10_启动材料/二期中心服务路线图.md</code></div>
   <h1>二期中心服务路线图</h1>
 
@@ -1507,7 +1559,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>6. 刘大确认服务器电脑。</p>
 </section>
 
-<section id="section-20">
+<section id="section-22">
   <div class="source">来源文件：<code>10_启动材料/逐分钟演示讲稿.md</code></div>
   <h1>逐分钟演示讲稿</h1>
 
@@ -1622,7 +1674,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>第一版先把协作流程跑通，二期再做资源发号、窗口心跳、StartPack 自动生成、Dashboard 审核面板。</p>
 </section>
 
-<section id="section-21">
+<section id="section-23">
   <div class="source">来源文件：<code>10_启动材料/现场答辩问答.md</code></div>
   <h1>现场答辩问答</h1>
 
@@ -1677,7 +1729,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>数据库和服务器属于二期，不算当前第一阶段缺口。</p>
 </section>
 
-<section id="section-22">
+<section id="section-24">
   <div class="source">来源文件：<code>10_启动材料/新窗口演示提示词.md</code></div>
   <h1>新窗口演示提示词</h1>
 

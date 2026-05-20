@@ -291,6 +291,50 @@
       font-weight: 750;
       padding: 6px 2px 8px;
     }
+    .dept-block {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    .dept-title {
+      display: grid;
+      grid-template-columns: minmax(110px, .36fr) minmax(80px, .18fr) minmax(160px, 1fr);
+      gap: 10px;
+      align-items: center;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 7px 9px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .dept-title:hover {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+    .dept-title strong,
+    .dept-title span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dept-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .project-docs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(100px, 1fr));
+      gap: 6px;
+      margin: -2px 0 8px;
+    }
+    .project-docs .item.compact {
+      grid-template-columns: minmax(80px, .52fr) minmax(60px, .22fr) minmax(80px, 1fr);
+      margin: 0;
+    }
     .doc-panel {
       background: #fff;
       border: 1px solid var(--line);
@@ -381,7 +425,7 @@
   </main>
 
   <script>
-    const state = { status: null, structure: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目" };
+    const state = { status: null, structure: null, projects: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目" };
     const $ = (selector) => document.querySelector(selector);
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch]));
     const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max));
@@ -442,7 +486,7 @@
     }
     const moduleView = {
       "00_规则": { count: "rules-count", title: "00_规则", sub: "AI读取 / 敏感信息 / Git协作 / 审核 / 阶段边界" },
-      "01_项目": { count: "handoff-count", title: "01_项目", sub: "AI工作台 / StartPack / 当前状态 / 页面编号" },
+      "01_项目": { count: "project-count", title: "01_项目", sub: "部门 / 项目 / StartPack / 当前状态 / 页面编号" },
       "03_工作流": { count: "workflow-count", title: "03_工作流", sub: "接手 / 会议沉淀 / 测试Agent / 资源申请" },
       "04_资源登记": { count: "resource-count", title: "04_资源登记", sub: "页面角标 / 端口 / 电脑环境 / secret / 服务器" },
       "05_待审核": { count: "proposal-count", title: "05_待审核", sub: "记忆提案 / Skill提案 / 资源变更提案" },
@@ -458,7 +502,7 @@
       const intro = item(mod.role, mod.defaultRead, mod.purpose);
       const files = `<div class="section-label">模块文件</div>${fileItems(mod.files || [])}`;
       if (mod.module === "01_项目") {
-        return `${intro}<div class="section-label">新窗口接手包</div><div id="handoff-col"></div>${files}`;
+        return `${intro}<div class="section-label">部门项目导航</div><div id="project-col"></div><div class="section-label">新窗口接手包</div><div id="handoff-col"></div>${files}`;
       }
       if (mod.module === "03_工作流") {
         const flow = (state.structure?.workflow || []).map((step, index) => `${index + 1}. ${step}`).join("\n");
@@ -523,6 +567,7 @@
         </div>`;
     }
     function renderActiveModuleData() {
+      renderProjects();
       renderHandoff();
       renderIndex();
       renderImported();
@@ -551,6 +596,38 @@
       if ($("#top-meta")) $("#top-meta").textContent = `${state.status?.repo || ""} · ${state.git?.current || "-"} · ${state.status?.gitLatest || ""}`;
       if ($("#top-notice")) $("#top-notice").textContent = `候选 ${state.candidates?.candidates?.length || 0} · 导入 ${imported} · 待审核 ${proposals} · 工作区 ${gitDirty ? "有改动" : "干净"}`;
       if ($("#git-line")) $("#git-line").textContent = state.git?.remote || "未配置远端";
+    }
+    function projectDoc(title, meta, path) {
+      return path ? item(title, meta, path, path, { compact: true }) : "";
+    }
+    function renderProjects() {
+      const col = $("#project-col");
+      const count = $("#project-count");
+      if (!col) return;
+      const departments = state.projects?.departments || [];
+      const projectCount = state.projects?.projectCount || 0;
+      if (count) count.textContent = `${departments.length}/${projectCount}`;
+      if (!departments.length) {
+        col.innerHTML = "<div class='empty'>暂无部门项目数据</div>";
+        return;
+      }
+      col.innerHTML = departments.map((dept) => `
+        <div class="dept-block">
+          <div class="dept-title" data-doc="${escapeHtml(dept.overview)}" role="button" tabindex="0">
+            <strong>${escapeHtml(dept.name)}</strong>
+            <span>${escapeHtml(dept.status)} · ${escapeHtml(dept.owner)}</span>
+            <span>${escapeHtml(dept.summary || "")}</span>
+          </div>
+          ${(dept.projects || []).map((project) => `
+            ${item(project.name || "未命名项目", `${project.status || "-"} · ${project.owner || "未指定负责人"}`, `${project.repo || "-"}\n${project.localPath || "-"}`, project.overview, { compact: true })}
+            <div class="project-docs">
+              ${projectDoc("StartPack", "接手包", project.startPack)}
+              ${projectDoc("当前状态", "当前事实", project.current)}
+              ${projectDoc("接手说明", "执行规则", project.handoff)}
+            </div>
+          `).join("")}
+        </div>
+      `).join("");
     }
     function renderHandoff() {
       const data = state.startPack;
@@ -654,16 +731,17 @@
       $("#doc-body").textContent = data.body;
     }
     async function loadAll() {
-      const [status, structure, git, resources, imported, proposals, candidates] = await Promise.all([
+      const [status, structure, projects, git, resources, imported, proposals, candidates] = await Promise.all([
         api("/api/status"),
         api("/api/structure"),
+        api("/api/projects"),
         api("/api/git"),
         api("/api/resources"),
         api("/api/imported"),
         api("/api/proposals"),
         api("/api/import-candidates"),
       ]);
-      Object.assign(state, { status, structure, git, resources, imported, proposals, candidates, startPack: null });
+      Object.assign(state, { status, structure, projects, git, resources, imported, proposals, candidates, startPack: null });
       renderNumberedColumns(); renderSummary(); renderActiveModuleData();
       if (!$("#doc-body").textContent) openDoc("AI入口.md");
     }

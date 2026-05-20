@@ -35,8 +35,10 @@ STRUCTURE = [
     {
         "module": "01_项目",
         "role": "项目记忆层",
-        "purpose": "保存项目 StartPack、当前状态、接手说明、页面编号、决策和证据。",
+        "purpose": "按部门管理项目入口，并保存项目 StartPack、当前状态、接手说明、页面编号、决策和证据。",
         "files": [
+            "01_项目/部门总览.md",
+            "01_项目/AI工作台部门/部门总览.md",
             "01_项目/AI工作台/StartPack.md",
             "01_项目/AI工作台/当前状态.md",
             "01_项目/AI工作台/接手说明.md",
@@ -315,6 +317,89 @@ def structure_payload() -> dict[str, object]:
             file_summary("04_资源登记/页面角标编号.md"),
             file_summary("05_待审核/README.md"),
         ],
+    }
+
+
+def project_catalog_payload() -> dict[str, object]:
+    departments: list[dict[str, object]] = []
+    department_index = "01_项目/部门总览.md"
+    department_rows = parse_table(department_index) if (ROOT / department_index).exists() else []
+    assigned_paths: set[str] = set()
+    for row in department_rows:
+        overview = row.get("部门文档", "")
+        if not overview:
+            continue
+        projects: list[dict[str, str]] = []
+        if (ROOT / overview).exists():
+            for project in parse_table(overview):
+                local_path = project.get("本地路径", "")
+                if local_path:
+                    assigned_paths.add(local_path)
+                projects.append(
+                    {
+                        "name": project.get("项目", ""),
+                        "status": project.get("状态", ""),
+                        "repo": project.get("Git仓库", ""),
+                        "localPath": local_path,
+                        "overview": project.get("项目总览", ""),
+                        "startPack": project.get("StartPack", ""),
+                        "current": project.get("当前状态", ""),
+                        "handoff": project.get("接手说明", ""),
+                        "owner": project.get("负责人", ""),
+                        "note": project.get("备注", ""),
+                    }
+                )
+            summary = extract_section(read_text(overview), "部门定位", 260)
+        else:
+            summary = ""
+        departments.append(
+            {
+                "name": row.get("部门", ""),
+                "overview": overview,
+                "owner": row.get("负责人", ""),
+                "status": row.get("状态", ""),
+                "summary": summary or row.get("说明", ""),
+                "projects": projects,
+            }
+        )
+
+    uncategorized: list[dict[str, str]] = []
+    projects_root = ROOT / "01_项目"
+    for project_dir in sorted(path for path in projects_root.iterdir() if path.is_dir()):
+        rel = str(project_dir.relative_to(ROOT))
+        if rel in assigned_paths or (project_dir / "部门总览.md").exists():
+            continue
+        if not all((project_dir / name).exists() for name in ["项目总览.md", "StartPack.md", "当前状态.md", "接手说明.md"]):
+            continue
+        uncategorized.append(
+            {
+                "name": project_dir.name,
+                "status": "current",
+                "repo": git_payload().get("remote", ""),
+                "localPath": rel,
+                "overview": f"{rel}/项目总览.md",
+                "startPack": f"{rel}/StartPack.md",
+                "current": f"{rel}/当前状态.md",
+                "handoff": f"{rel}/接手说明.md",
+                "owner": "",
+                "note": "未写入部门文档",
+            }
+        )
+    if uncategorized:
+        departments.append(
+            {
+                "name": "未分类项目",
+                "overview": "01_项目/部门总览.md",
+                "owner": "待确认",
+                "status": "draft",
+                "summary": "这些项目具备项目文件，但还没有归入具体部门。",
+                "projects": uncategorized,
+            }
+        )
+    return {
+        "index": file_summary(department_index) if (ROOT / department_index).exists() else {},
+        "departments": departments,
+        "projectCount": sum(len(row["projects"]) for row in departments),
     }
 
 
@@ -655,6 +740,9 @@ class DemoHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/structure":
             self.send_json(structure_payload())
+            return
+        if path == "/api/projects":
+            self.send_json(project_catalog_payload())
             return
         if path == "/api/document":
             rel = parse_qs(parsed.query).get("path", ["README.md"])[0]

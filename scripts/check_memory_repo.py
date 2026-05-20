@@ -126,7 +126,19 @@ def check_project_structure() -> list[str]:
     projects_root = ROOT / "01_项目"
     if not projects_root.exists():
         return [f"{projects_root.relative_to(ROOT)}: missing projects directory"]
+    department_index = projects_root / "部门总览.md"
+    if not department_index.exists():
+        errors.append(f"{department_index.relative_to(ROOT)}: missing department index")
     for project_dir in sorted(path for path in projects_root.iterdir() if path.is_dir()):
+        if (project_dir / "部门总览.md").exists():
+            for nested_project in sorted(path for path in project_dir.iterdir() if path.is_dir()):
+                present = {path.name for path in nested_project.glob("*.md")}
+                if not present:
+                    continue
+                missing = sorted(REQUIRED_PROJECT_FILES - present)
+                if missing:
+                    errors.append(f"{nested_project.relative_to(ROOT)}: missing project files: {', '.join(missing)}")
+            continue
         present = {path.name for path in project_dir.glob("*.md")}
         missing = sorted(REQUIRED_PROJECT_FILES - present)
         if missing:
