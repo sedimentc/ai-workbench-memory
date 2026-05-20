@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = [
     "README.md",
     "演示入口.md",
+    "运行演示.html",
     "AI入口.md",
     "总览.md",
     "00_规则/阶段边界.md",
@@ -43,6 +44,7 @@ REQUIRED_FILES = [
     "scripts/check_memory_repo.py",
     "scripts/new_proposal.py",
     "scripts/export_demo_packet.py",
+    "scripts/demo_server.py",
 ]
 
 

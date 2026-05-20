@@ -135,7 +135,7 @@
 <body>
   <header>
     <h1>AI 工作台共享 MD 系统演示包</h1>
-    <p>生成时间：2026-05-20T10:37:51+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
+    <p>生成时间：2026-05-20T10:55:10+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
   </header>
   <main>
     <nav><a href="#section-1">1. 10_启动材料/当前系统状态.md</a>
@@ -179,6 +179,14 @@
 <p>首选打开：</p>
 
 <pre><code>/Users/sediment/Documents/ai-workbench-memory/dist/index.html</code></pre>
+
+<p>运行演示：</p>
+
+<pre><code>python3 scripts/demo_server.py --port 8766</code></pre>
+
+<p>打开：</p>
+
+<pre><code>http://127.0.0.1:8766/demo</code></pre>
 
 <p>备用 Markdown 演示包：</p>
 
@@ -376,6 +384,8 @@ CHECK_PASS</code></pre>
 <p class="bullet">- `scripts/new_proposal.py`</p>
 <p class="bullet">- `scripts/run_demo_check.py`</p>
 <p class="bullet">- `scripts/export_demo_packet.py`</p>
+<p class="bullet">- `scripts/demo_server.py`</p>
+<p class="bullet">- `运行演示.html`</p>
 
 <p>作用：</p>
 
@@ -383,6 +393,8 @@ CHECK_PASS</code></pre>
 <p class="bullet">- `new_proposal.py`：生成标准待审核提案。</p>
 <p class="bullet">- `run_demo_check.py`：演示前检查仓库是否准备好。</p>
 <p class="bullet">- `export_demo_packet.py`：导出 `dist/index.html` 和 `dist/演示包.md`。</p>
+<p class="bullet">- `demo_server.py`：启动本地运行演示，提供状态、自检、索引解析、StartPack、演示提案 API。</p>
+<p class="bullet">- `运行演示.html`：可点击演示系统框架和实际工作流。</p>
 
 <h2>当前实测情况</h2>
 
@@ -504,6 +516,8 @@ git push -u origin main</code></pre>
 
 <p>&gt; 这版已经吸收刘大自己的 MD 系统：页面索引、技能索引、别名词典、窗口索引和字段契约索引已经单独放到 `07_实战索引/`。我们保留 Git 和审核，不走简易锁；敏感信息按刘大口径，核心成员受限文档允许记录真实协作凭据。</p>
 
+<p>如果现场要“跑起来”，直接启动 `scripts/demo_server.py`，打开 `http://127.0.0.1:8766/demo`，按左侧流程点击演示。</p>
+
 <h2>当前推荐下一步</h2>
 
 <p>1. 把本地仓库推到 GitHub。</p>
@@ -544,7 +558,25 @@ python3 scripts/run_demo_check.py</code></pre>
 
 <p>这是最适合现场演示的入口，左侧有目录，右侧是完整演示内容。</p>
 
-<h3>方式二：打开单份 Markdown 演示包</h3>
+<h3>方式二：启动运行演示</h3>
+
+<p>启动本地服务：</p>
+
+<pre><code>python3 scripts/demo_server.py --port 8766</code></pre>
+
+<p>打开：</p>
+
+<pre><code>http://127.0.0.1:8766/demo</code></pre>
+
+<p>这不是静态文档，会实时读取仓库状态、实战索引、StartPack，并能点击跑：</p>
+
+<p class="bullet">- 新窗口接手。</p>
+<p class="bullet">- 页面22索引解析。</p>
+<p class="bullet">- 待审核提案生成。</p>
+<p class="bullet">- 核心成员凭据规则。</p>
+<p class="bullet">- 系统自检。</p>
+
+<h3>方式三：打开单份 Markdown 演示包</h3>
 
 <p>打开：</p>
 
@@ -556,7 +588,7 @@ python3 scripts/run_demo_check.py</code></pre>
 
 <pre><code>python3 scripts/export_demo_packet.py</code></pre>
 
-<h3>方式三：逐个打开源文件</h3>
+<h3>方式四：逐个打开源文件</h3>
 
 <p>1. 打开 `README.md`，讲系统定位。</p>
 <p>2. 打开 `10_启动材料/当前系统状态.md`，讲当前搭建情况。</p>
@@ -628,6 +660,8 @@ python3 scripts/run_demo_check.py</code></pre>
 <p class="bullet">- `scripts/new_proposal.py`：生成标准待审核提案。</p>
 <p class="bullet">- `scripts/export_demo_packet.py`：导出 HTML 和 Markdown 演示包。</p>
 <p class="bullet">- `scripts/run_demo_check.py`：演示前准备检查。</p>
+<p class="bullet">- `scripts/demo_server.py`：启动可点击的本地运行演示。</p>
+<p class="bullet">- `运行演示.html`：系统框架和实际工作流的交互演示页。</p>
 <p class="bullet">- `10_启动材料/`：上线步骤、演示脚本、第一周推进清单和验收清单。</p>
 <p class="bullet">- `10_启动材料/当前系统状态.md`：当前搭建情况总览。</p>
 <p class="bullet">- `10_启动材料/功能对照表.md`：对照刘大、王老师、肖明原始框架。</p>
@@ -648,6 +682,14 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>演示前检查：</p>
 
 <pre><code>python3 scripts/run_demo_check.py</code></pre>
+
+<p>启动运行演示：</p>
+
+<pre><code>python3 scripts/demo_server.py --port 8766</code></pre>
+
+<p>打开：</p>
+
+<pre><code>http://127.0.0.1:8766/demo</code></pre>
 
 <p>导出演示包：</p>
 

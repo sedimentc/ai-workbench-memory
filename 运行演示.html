@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 工作台共享 MD 系统运行演示</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface-2: #eef3f7;
+      --ink: #182230;
+      --muted: #64748b;
+      --line: #d5dde7;
+      --accent: #0f766e;
+      --accent-2: #7c2d12;
+      --ok: #15803d;
+      --warn: #b45309;
+      --code: #101828;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      padding: 18px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+    .topbar {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .status-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      padding: 6px 9px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    main {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 18px 20px 36px;
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+      gap: 18px;
+    }
+    aside {
+      position: sticky;
+      top: 88px;
+      align-self: start;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 12px;
+      max-height: calc(100vh - 112px);
+      overflow: auto;
+    }
+    aside button,
+    .toolbar button,
+    .inline-action {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      padding: 10px 11px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    aside button:hover,
+    .toolbar button:hover,
+    .inline-action:hover {
+      border-color: var(--accent);
+      background: #ecfdf5;
+    }
+    aside button.active {
+      background: #ccfbf1;
+      border-color: var(--accent);
+    }
+    .workspace {
+      display: grid;
+      gap: 18px;
+    }
+    section {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 18px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .flow-node {
+      border: 1px solid var(--line);
+      min-height: 92px;
+      padding: 12px;
+      background: var(--surface-2);
+    }
+    .flow-node strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+    .flow-node span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
+      gap: 16px;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .toolbar button {
+      margin: 0;
+      text-align: center;
+      min-height: 44px;
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 120px;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      padding: 10px 11px;
+    }
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+    .inline-action {
+      margin: 0;
+      text-align: center;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--code);
+      color: #e5e7eb;
+      padding: 14px;
+      min-height: 230px;
+      overflow: auto;
+      font-size: 13px;
+    }
+    .facts {
+      display: grid;
+      gap: 8px;
+    }
+    .fact {
+      border-left: 4px solid var(--accent);
+      background: var(--surface-2);
+      padding: 10px 12px;
+    }
+    .fact b {
+      display: block;
+      margin-bottom: 2px;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .ok {
+      color: var(--ok);
+      font-weight: 600;
+    }
+    .warn {
+      color: var(--warn);
+      font-weight: 600;
+    }
+    @media (max-width: 900px) {
+      main,
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+      aside {
+        position: static;
+        max-height: none;
+      }
+      .flow {
+        grid-template-columns: 1fr;
+      }
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .status-strip {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>AI 工作台共享 MD 系统运行演示</h1>
+        <p class="subtitle">不是纯文档：当前页面连接本地服务，实时读取仓库、索引、StartPack 和自检结果。</p>
+      </div>
+      <div class="status-strip" id="status-strip">
+        <span class="pill">正在连接本地服务</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <button class="active" data-step="framework">系统框架</button>
+      <button data-step="handoff">新窗口接手</button>
+      <button data-step="resolve">查页面22</button>
+      <button data-step="proposal">沉淀提案</button>
+      <button data-step="secret">凭据规则</button>
+      <button data-step="check">自检验收</button>
+    </aside>
+
+    <div class="workspace">
+      <section>
+        <h2>系统框架</h2>
+        <div class="flow" id="framework-flow"></div>
+      </section>
+
+      <section>
+        <h2>实际工作流演示</h2>
+        <div class="toolbar">
+          <button data-run="handoff">跑新窗口接手</button>
+          <button data-run="resolve">跑页面22索引</button>
+          <button data-run="proposal">生成待审核提案</button>
+          <button data-run="check">跑系统自检</button>
+        </div>
+        <div class="two-col">
+          <div>
+            <div class="input-row">
+              <input id="query" value="页面22" aria-label="索引查询">
+              <button class="inline-action" id="resolve-btn">查索引</button>
+            </div>
+            <textarea id="proposal-detail" aria-label="提案内容">用户说页面22时，AI 应先查别名词典和页面索引，再读项目 StartPack。</textarea>
+            <button class="inline-action" id="proposal-btn">生成一条演示提案</button>
+          </div>
+          <div class="facts" id="facts"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>运行输出</h2>
+        <pre id="output">等待操作。</pre>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const output = $("#output");
+    const facts = $("#facts");
+    const statusStrip = $("#status-strip");
+    const flow = $("#framework-flow");
+
+    const flowNodes = [
+      ["用户口语", "例如：页面22、小测、连接服务器、第四级窗口"],
+      ["07_实战索引", "别名、页面、技能、项目、窗口、字段契约"],
+      ["项目记忆", "StartPack、当前状态、接手说明"],
+      ["待审核/资源登记", "提案、页面编号、端口、连接信息"],
+      ["Git + 自检", "PR 审核、CODEOWNERS、check 脚本"],
+    ];
+
+    function showJson(data) {
+      output.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function setFacts(items) {
+      facts.innerHTML = items.map((item) => `
+        <div class="fact">
+          <b>${item.title}</b>
+          <span class="small">${item.body}</span>
+        </div>
+      `).join("");
+    }
+
+    async function getJson(url, options) {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
+
+    async function loadStatus() {
+      const data = await getJson("/api/status");
+      statusStrip.innerHTML = [
+        `<span class="pill ${data.check.code === 0 ? "ok" : "warn"}">${data.check.code === 0 ? "CHECK_PASS" : "CHECK_FAIL"}</span>`,
+        `<span class="pill">${data.markdownFiles} 个 MD 文件</span>`,
+        `<span class="pill">${data.workingTreeClean ? "Git 干净" : "Git 有改动"}</span>`,
+      ].join("");
+      flow.innerHTML = flowNodes.map(([title, body]) => `
+        <div class="flow-node">
+          <strong>${title}</strong>
+          <span>${body}</span>
+        </div>
+      `).join("");
+      setFacts([
+        { title: "当前仓库", body: data.repo },
+        { title: "最新提交", body: data.gitLatest || "未读取到" },
+        { title: "远端", body: data.gitRemote || "未绑定" },
+      ]);
+      showJson(data);
+    }
+
+    async function runHandoff() {
+      const data = await getJson("/api/start-pack");
+      setFacts([
+        { title: "AI 先读这些文件", body: data.filesRead.join(" -> ") },
+        { title: "当前目标", body: data.goal.replace(/\n/g, " ") },
+        { title: "已确认规则", body: data.confirmedRules.replace(/\n/g, " ") },
+      ]);
+      showJson(data);
+    }
+
+    async function runResolve() {
+      const query = encodeURIComponent($("#query").value || "页面22");
+      const data = await getJson(`/api/resolve?q=${query}`);
+      setFacts([
+        { title: "用户说法", body: data.query },
+        { title: "标准对象", body: data.standard },
+        { title: "下一步", body: data.page ? `${data.page["页面名"]}，入口：${data.page["入口/路径"]}` : "未命中页面，查看输出" },
+      ]);
+      showJson(data);
+    }
+
+    async function runProposal() {
+      const data = await getJson("/api/proposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "演示提案-页面22接手规则",
+          detail: $("#proposal-detail").value,
+        }),
+      });
+      setFacts([
+        { title: "提案状态", body: "proposed，不会直接进入正式规则" },
+        { title: "生成位置", body: data.path },
+        { title: "说明", body: "该文件在 .demo_runtime/，演示完不会污染 Git 工作区" },
+      ]);
+      showJson(data);
+    }
+
+    async function runSecret() {
+      const data = await getJson("/api/secret-policy");
+      setFacts([
+        { title: "受限文档", body: data.restrictedFile },
+        { title: "允许条件", body: data.allowedWhen.join("；") },
+        { title: "演示包", body: data.demoExport },
+      ]);
+      showJson(data);
+    }
+
+    async function runCheck() {
+      const data = await getJson("/api/check");
+      setFacts([
+        { title: "检查结果", body: data.check.code === 0 ? "通过" : "失败" },
+        { title: "检查脚本", body: "scripts/check_memory_repo.py" },
+        { title: "检查范围", body: "frontmatter、重复 ID、敏感值、页面编号、项目必需文件" },
+      ]);
+      showJson(data);
+    }
+
+    const actions = {
+      framework: loadStatus,
+      handoff: runHandoff,
+      resolve: runResolve,
+      proposal: runProposal,
+      secret: runSecret,
+      check: runCheck,
+    };
+
+    document.querySelectorAll("aside button").forEach((button) => {
+      button.addEventListener("click", async () => {
+        document.querySelectorAll("aside button").forEach((b) => b.classList.remove("active"));
+        button.classList.add("active");
+        await actions[button.dataset.step]();
+      });
+    });
+    document.querySelectorAll("[data-run]").forEach((button) => {
+      button.addEventListener("click", () => actions[button.dataset.run]());
+    });
+    $("#resolve-btn").addEventListener("click", runResolve);
+    $("#proposal-btn").addEventListener("click", runProposal);
+
+    loadStatus().catch((error) => {
+      output.textContent = String(error);
+      statusStrip.innerHTML = '<span class="pill warn">本地服务连接失败</span>';
+    });
+  </script>
+</body>
+</html>

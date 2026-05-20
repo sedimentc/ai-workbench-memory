@@ -2,6 +2,7 @@
 *.tmp
 *.bak
 __pycache__/
+.demo_runtime/
 dist/*
 !dist/
 !dist/演示包.md

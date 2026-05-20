@@ -39,6 +39,8 @@ source: 第一版共享 MD 系统落地
 - `scripts/new_proposal.py`：生成标准待审核提案。
 - `scripts/export_demo_packet.py`：导出 HTML 和 Markdown 演示包。
 - `scripts/run_demo_check.py`：演示前准备检查。
+- `scripts/demo_server.py`：启动可点击的本地运行演示。
+- `运行演示.html`：系统框架和实际工作流的交互演示页。
 - `10_启动材料/`：上线步骤、演示脚本、第一周推进清单和验收清单。
 - `10_启动材料/当前系统状态.md`：当前搭建情况总览。
 - `10_启动材料/功能对照表.md`：对照刘大、王老师、肖明原始框架。
@@ -62,6 +64,18 @@ python3 scripts/check_memory_repo.py
 
 ```bash
 python3 scripts/run_demo_check.py
+```
+
+启动运行演示：
+
+```bash
+python3 scripts/demo_server.py --port 8766
+```
+
+打开：
+
+```text
+http://127.0.0.1:8766/demo
 ```
 
 导出演示包：

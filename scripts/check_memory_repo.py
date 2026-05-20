@@ -31,6 +31,7 @@ def iter_markdown_files(include_github: bool = False) -> list[Path]:
         path
         for path in ROOT.rglob("*.md")
         if ".git" not in path.parts and "__pycache__" not in path.parts
+        and ".demo_runtime" not in path.parts
         and "dist" not in path.parts
         and (include_github or ".github" not in path.parts)
     )
