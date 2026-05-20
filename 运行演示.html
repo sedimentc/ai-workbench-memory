@@ -495,6 +495,10 @@
     .hierarchy-row button {
       min-height: 34px;
     }
+    .hierarchy-row input[type="file"] {
+      min-height: 34px;
+      padding: 6px 8px;
+    }
     .project-filter {
       display: grid;
       grid-template-columns: 92px minmax(0, 1fr) 78px;
@@ -1024,6 +1028,35 @@
               <div class="action-line" id="project-action-line">部门可删除；项目删除会移入 99_归档/旧项目记录。</div>
             </div>
           </details>
+          <details class="item soft hierarchy-shell">
+            <summary>
+              <span>上传项目文件夹</span>
+              <span class="tag">团队上传</span>
+              <span class="summary-arrow">▾</span>
+            </summary>
+            <div class="hierarchy-content">
+              <div class="hierarchy-list">
+                <div class="hierarchy-row">
+                  <div class="hierarchy-label"><strong>项目信息</strong><span>归入部门</span></div>
+                  <div class="hierarchy-fields three">
+                    <select id="upload-department"></select>
+                    <input id="upload-project-name" placeholder="项目名，默认取文件夹名">
+                    <input id="upload-owner" placeholder="上传人/负责人">
+                  </div>
+                  <button id="upload-project-folder" class="primary">上传</button>
+                </div>
+                <div class="hierarchy-row">
+                  <div class="hierarchy-label"><strong>选择文件夹</strong><span>生成项目记录</span></div>
+                  <div class="hierarchy-fields two">
+                    <input id="upload-repo" placeholder="Git 仓库地址，可空">
+                    <input id="project-folder-input" type="file" webkitdirectory directory multiple>
+                  </div>
+                  <span class="tag blue">保存到上传文件</span>
+                </div>
+              </div>
+              <div class="action-line" id="upload-action-line">选择整个项目文件夹后上传；会过滤 .git、node_modules、大文件，并生成上传清单。</div>
+            </div>
+          </details>
           <div class="section-label">部门项目导航</div>
           <div class="project-filter">
             <button id="show-all-projects">显示全部</button>
@@ -1229,10 +1262,13 @@
     function renderProjectControls() {
       const departments = state.projects?.departments || [];
       const projectDepartment = $("#project-department");
+      const uploadDepartment = $("#upload-department");
       const deleteDepartment = $("#delete-department-select");
       const deleteProject = $("#delete-project-select");
       if (!projectDepartment || !deleteDepartment || !deleteProject) return;
-      projectDepartment.innerHTML = departments.map((dept) => `<option value="${escapeHtml(dept.overview)}">${escapeHtml(dept.name)}</option>`).join("");
+      const options = departments.map((dept) => `<option value="${escapeHtml(dept.overview)}">${escapeHtml(dept.name)}</option>`).join("");
+      projectDepartment.innerHTML = options;
+      if (uploadDepartment) uploadDepartment.innerHTML = options;
       deleteDepartment.innerHTML = `<option value="">删除空部门...</option>` + departments.map((dept) => `<option value="department:${escapeHtml(dept.overview)}">${escapeHtml(dept.name)} · ${dept.projects?.length || 0} 项目</option>`).join("");
       const projectOptions = departments.flatMap((dept) => (dept.projects || []).map((project) => ({ dept, project }))).filter(({ project }) => !project.protected);
       deleteProject.innerHTML = `<option value="">归档项目...</option>` + projectOptions.map(({ dept, project }) => `<option value="project:${escapeHtml(dept.overview)}|${escapeHtml(project.localPath)}">${escapeHtml(dept.name)} / ${escapeHtml(project.name)}</option>`).join("");
@@ -1628,6 +1664,37 @@
         note: "面板自定义新增",
       }, "项目已新增，并生成项目总览、StartPack、当前状态、接手说明。");
     }
+    async function uploadProjectFolder() {
+      const input = $("#project-folder-input");
+      const files = Array.from(input?.files || []);
+      const line = $("#upload-action-line");
+      if (!files.length) {
+        if (line) line.textContent = "请先选择一个项目文件夹。";
+        return;
+      }
+      const firstPath = files[0].webkitRelativePath || files[0].name || "";
+      const inferredName = firstPath.split("/")[0] || files[0].name || "上传项目";
+      const form = new FormData();
+      form.append("department", $("#upload-department").value);
+      form.append("projectName", $("#upload-project-name").value || inferredName);
+      form.append("owner", $("#upload-owner").value || "陈纪言");
+      form.append("repo", $("#upload-repo").value || "");
+      form.append("note", "团队成员通过面板上传项目文件夹");
+      files.forEach((file) => form.append("files", file, file.webkitRelativePath || file.name));
+      if (line) line.textContent = `上传中：${files.length} 个文件...`;
+      const response = await fetch("/api/upload-project-folder", { method: "POST", body: form });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "上传失败");
+      state.projects = result.projects;
+      state.status = await api("/api/status");
+      state.git = await api("/api/git");
+      state.activeModule = "01_项目";
+      renderNumberedColumns(); renderActiveModuleData(); renderSummary();
+      openDoc(result.path);
+      if ($("#top-notice")) $("#top-notice").textContent = `项目文件夹已上传 · 保存 ${result.saved.length} 个文件 · 跳过 ${result.skipped.length} 个文件`;
+      const nextLine = $("#upload-action-line");
+      if (nextLine) nextLine.textContent = `上传完成：保存 ${result.saved.length} 个文件，跳过 ${result.skipped.length} 个文件。`;
+    }
     async function deleteSelectedProjectLevel() {
       const projectValue = $("#delete-project-select").value;
       const departmentValue = $("#delete-department-select").value;
@@ -1708,6 +1775,7 @@
       if (button.id === "import-selected") importSelected();
       if (button.id === "add-department") addDepartment().catch((error) => { const line = $("#project-action-line"); if (line) line.textContent = String(error.message || error); });
       if (button.id === "add-project") addProject().catch((error) => { const line = $("#project-action-line"); if (line) line.textContent = String(error.message || error); });
+      if (button.id === "upload-project-folder") uploadProjectFolder().catch((error) => { const line = $("#upload-action-line"); if (line) line.textContent = String(error.message || error); });
       if (button.id === "delete-selected") deleteSelectedProjectLevel().catch((error) => { const line = $("#project-action-line"); if (line) line.textContent = String(error.message || error); });
       if (button.id === "open-import-index") openDoc("08_导入资料/README.md");
       if (button.id === "refresh-git") { state.git = await api("/api/git"); renderGit(); renderSummary(); }

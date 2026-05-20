@@ -7,6 +7,8 @@ import argparse
 import json
 import re
 import subprocess
+from email import policy
+from email.parser import BytesParser
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -246,6 +248,10 @@ def clean_table_value(value: object) -> str:
     return re.sub(r"\s+", " ", str(value or "").replace("|", "/")).strip()
 
 
+def clean_upload_value(value: object, fallback: str = "") -> str:
+    return clean_table_value(value) or fallback
+
+
 def code_cell(value: object) -> str:
     value = clean_table_value(value)
     return f"`{value}`" if value else ""
@@ -472,6 +478,225 @@ def file_tree_payload(rel: str, limit: int = 80) -> list[dict[str, str]]:
             "directory": str(path.parent.relative_to(ROOT)),
         })
     return files
+
+
+def parse_multipart_form(body: bytes, content_type: str) -> tuple[dict[str, str], list[dict[str, object]]]:
+    if "multipart/form-data" not in content_type:
+        raise ValueError("request must be multipart/form-data")
+    message = BytesParser(policy=policy.default).parsebytes(
+        f"Content-Type: {content_type}\nMIME-Version: 1.0\n\n".encode("utf-8") + body
+    )
+    fields: dict[str, str] = {}
+    files: list[dict[str, object]] = []
+    for part in message.iter_parts():
+        disposition = part.get("Content-Disposition", "")
+        if "form-data" not in disposition:
+            continue
+        name = part.get_param("name", header="content-disposition")
+        filename = part.get_filename()
+        payload = part.get_payload(decode=True) or b""
+        if not name:
+            continue
+        if filename is None:
+            fields[str(name)] = payload.decode("utf-8", errors="replace")
+        else:
+            files.append({"field": str(name), "filename": filename, "content": payload})
+    return fields, files
+
+
+def safe_upload_rel(raw: object) -> Path | None:
+    rel = str(raw or "").replace("\\", "/").strip().strip("/")
+    if not rel:
+        return None
+    parts: list[str] = []
+    blocked = {".git", ".svn", ".hg", "node_modules", "__pycache__", ".demo_runtime"}
+    for part in rel.split("/"):
+        part = part.strip()
+        if not part or part in {".", ".."}:
+            continue
+        if part in blocked:
+            return None
+        safe_part = re.sub(r"[\x00<>:\"|?*]+", "_", part)
+        if safe_part in blocked:
+            return None
+        parts.append(safe_part)
+    if not parts:
+        return None
+    return Path(*parts)
+
+
+def upload_project_folder_payload(body: bytes, content_type: str) -> dict[str, object]:
+    fields, uploaded_files = parse_multipart_form(body, content_type)
+    department_overview = clean_upload_value(fields.get("department"))
+    if not department_overview:
+        raise ValueError("department is required")
+    department_file = safe_relative_path(department_overview)
+    if department_file.name != "部门总览.md" or department_file.parent.parent != ROOT / "01_项目":
+        raise ValueError("invalid department")
+    if not uploaded_files:
+        raise ValueError("folder files are required")
+
+    root_names = [
+        str(file.get("filename", "")).replace("\\", "/").strip("/").split("/")[0]
+        for file in uploaded_files
+        if str(file.get("filename", "")).strip()
+    ]
+    default_name = root_names[0] if root_names else "上传项目"
+    name = safe_slug(fields.get("projectName") or default_name)
+    owner = clean_upload_value(fields.get("owner"), "陈纪言")
+    repo = clean_upload_value(fields.get("repo"))
+    note = clean_upload_value(fields.get("note"), "团队成员通过面板上传项目文件夹")
+
+    project_dir = department_file.parent / name
+    rows = project_rows(department_overview)
+    rel = str(project_dir.relative_to(ROOT))
+    if project_dir.exists() or any(row.get("项目") == name or row.get("本地路径") == rel for row in rows):
+        raise ValueError("project already exists; rename before upload")
+
+    max_files = 300
+    max_total = 35 * 1024 * 1024
+    max_single = 8 * 1024 * 1024
+    total = 0
+    saved: list[dict[str, object]] = []
+    skipped: list[dict[str, object]] = []
+    project_dir.mkdir(parents=True)
+    upload_dir = project_dir / "上传文件"
+    upload_dir.mkdir()
+    try:
+        for index, file in enumerate(uploaded_files):
+            filename = str(file.get("filename") or "")
+            content = bytes(file.get("content") or b"")
+            safe_rel = safe_upload_rel(filename)
+            if index >= max_files:
+                skipped.append({"path": filename, "reason": "超过文件数量上限"})
+                continue
+            if safe_rel is None:
+                skipped.append({"path": filename, "reason": "路径被过滤"})
+                continue
+            if len(content) > max_single:
+                skipped.append({"path": filename, "reason": "单文件超过 8MB"})
+                continue
+            if total + len(content) > max_total:
+                skipped.append({"path": filename, "reason": "总上传大小超过 35MB"})
+                continue
+            target = (upload_dir / safe_rel).resolve()
+            if upload_dir not in target.parents and target != upload_dir:
+                skipped.append({"path": filename, "reason": "非法路径"})
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+            total += len(content)
+            saved.append({"path": str(target.relative_to(ROOT)), "size": len(content)})
+
+        if not saved:
+            raise ValueError("no valid files saved")
+
+        upload_rel = str(upload_dir.relative_to(ROOT))
+        source = "运行演示页面上传项目文件夹"
+        create_project_doc(
+            project_dir / "项目总览.md",
+            f"项目总览：{name}",
+            "project_overview",
+            name,
+            f"## 项目目标\n\n由团队成员上传项目文件夹后创建，待负责人补充目标。\n\n## 上传文件夹\n\n- 存放位置：`{upload_rel}`\n- 已保存文件：{len(saved)} 个\n- 跳过文件：{len(skipped)} 个\n\n## 相关系统\n\n待补充。",
+            source,
+        )
+        create_project_doc(
+            project_dir / "StartPack.md",
+            f"StartPack：{name}",
+            "start_pack",
+            name,
+            f"## 当前目标\n\n先阅读上传清单和上传文件夹，判断项目结构、入口和下一步维护方式。\n\n## 当前状态\n\n团队成员已上传项目文件夹到 `{upload_rel}`。\n\n## 已确认规则\n\n1. 不直接把上传内容写成正式规则。\n2. 有价值的经验先进入待审核沉淀。\n3. 修改前先看 Git 工作区和最近提交记录。\n\n## 不确定项\n\n- 项目启动方式待确认。\n- 项目负责人需要补充验收标准。",
+            source,
+        )
+        create_project_doc(
+            project_dir / "当前状态.md",
+            f"当前状态：{name}",
+            "project_state",
+            name,
+            f"## 当前事实\n\n- 上传目录：`{upload_rel}`\n- 已保存文件：{len(saved)} 个\n- 总大小：{total} bytes\n\n## 最近有效任务\n\n团队成员完成项目文件夹上传。\n\n## 风险和卡点\n\n- 上传文件未经过代码审查。\n- 二进制、大文件、node_modules、.git 等目录会被过滤或跳过。",
+            source,
+        )
+        create_project_doc(
+            project_dir / "接手说明.md",
+            f"接手说明：{name}",
+            "handoff",
+            name,
+            f"## 接手顺序\n\n1. 读 `项目总览.md`。\n2. 读 `StartPack.md` 和 `当前状态.md`。\n3. 打开 `上传清单.md`，确认文件保存和跳过情况。\n4. 点击面板里的 `项目代码` 查看上传文件树和 Git 变更。\n\n## 上传文件夹\n\n`{upload_rel}`",
+            source,
+        )
+        manifest_lines = [
+            "---",
+            f"id: UPLOAD-MANIFEST-{timestamp()}",
+            "type: upload_manifest",
+            "status: current",
+            f"owner: {owner}",
+            "reviewer: 刘大/老王/肖明",
+            f"scope: {name}",
+            "sensitivity: internal",
+            f"last_reviewed: {today()}",
+            f"source: {source}",
+            "---",
+            "",
+            f"# 上传清单：{name}",
+            "",
+            "## 上传摘要",
+            "",
+            f"- 部门：{department_file.parent.name}",
+            f"- 项目：{name}",
+            f"- 上传目录：`{upload_rel}`",
+            f"- 已保存文件：{len(saved)}",
+            f"- 跳过文件：{len(skipped)}",
+            f"- 总大小：{total} bytes",
+            "",
+            "## 已保存文件",
+            "",
+            "| 文件 | 大小 |",
+            "| --- | --- |",
+            *[f"| `{row['path']}` | {row['size']} |" for row in saved],
+            "",
+            "## 跳过文件",
+            "",
+            "| 文件 | 原因 |",
+            "| --- | --- |",
+            *[f"| `{row['path']}` | {row['reason']} |" for row in skipped],
+            "",
+        ]
+        (project_dir / "上传清单.md").write_text("\n".join(manifest_lines), encoding="utf-8")
+        rows.append({
+            "项目": name,
+            "状态": "current",
+            "Git仓库": repo,
+            "本地路径": rel,
+            "项目总览": f"{rel}/项目总览.md",
+            "StartPack": f"{rel}/StartPack.md",
+            "当前状态": f"{rel}/当前状态.md",
+            "接手说明": f"{rel}/接手说明.md",
+            "负责人": owner,
+            "备注": note,
+        })
+        write_project_rows(department_overview, rows)
+        refresh_department_counts()
+    except Exception:
+        if project_dir.exists():
+            for path in sorted(project_dir.rglob("*"), key=lambda item: len(item.parts), reverse=True):
+                if path.is_file():
+                    path.unlink()
+                elif path.is_dir():
+                    path.rmdir()
+            if project_dir.exists():
+                project_dir.rmdir()
+        raise
+
+    return {
+        "ok": True,
+        "path": f"{rel}/上传清单.md",
+        "projectPath": rel,
+        "uploadPath": upload_rel,
+        "saved": saved,
+        "skipped": skipped,
+        "projects": project_catalog_payload(),
+    }
 
 
 def project_markdown_files(project: dict[str, str]) -> list[dict[str, object]]:
@@ -1312,6 +1537,12 @@ class DemoHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/project-hierarchy":
             try:
                 self.send_json(project_hierarchy_payload(body))
+            except (FileNotFoundError, OSError, ValueError) as exc:
+                self.send_json({"error": str(exc)}, status=400)
+            return
+        if parsed.path == "/api/upload-project-folder":
+            try:
+                self.send_json(upload_project_folder_payload(body, self.headers.get("Content-Type", "")))
             except (FileNotFoundError, OSError, ValueError) as exc:
                 self.send_json({"error": str(exc)}, status=400)
             return
