@@ -3,20 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI 工作台共享 MD 系统运行演示</title>
+  <title>AI 工作台记忆面板</title>
   <style>
     :root {
-      --bg: #f5f7fa;
+      --bg: #f4f6f8;
       --surface: #ffffff;
-      --surface-2: #eef3f7;
-      --ink: #182230;
-      --muted: #64748b;
-      --line: #d5dde7;
+      --subtle: #eef2f6;
+      --line: #d6dde6;
+      --ink: #172033;
+      --muted: #637083;
       --accent: #0f766e;
-      --accent-2: #7c2d12;
-      --ok: #15803d;
-      --warn: #b45309;
-      --code: #101828;
+      --accent-soft: #d9f4ef;
+      --warn: #a16207;
+      --danger: #b42318;
+      --ok: #166534;
+      --code: #111827;
     }
     * {
       box-sizing: border-box;
@@ -29,32 +30,32 @@
       line-height: 1.5;
     }
     header {
-      border-bottom: 1px solid var(--line);
-      background: var(--surface);
-      padding: 18px 24px;
       position: sticky;
       top: 0;
-      z-index: 3;
+      z-index: 10;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 18px;
     }
-    .topbar {
-      max-width: 1380px;
+    .header-inner {
+      max-width: 1500px;
       margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
       gap: 16px;
+      align-items: center;
     }
     h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 21px;
       letter-spacing: 0;
     }
     .subtitle {
-      margin: 4px 0 0;
+      margin: 3px 0 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
     }
-    .status-strip {
+    .status {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
@@ -62,386 +63,597 @@
     }
     .pill {
       border: 1px solid var(--line);
-      background: var(--surface-2);
+      background: var(--subtle);
       padding: 6px 9px;
       font-size: 13px;
       white-space: nowrap;
     }
+    .pill.ok {
+      color: var(--ok);
+      background: #ecfdf3;
+      border-color: #bbf7d0;
+    }
+    .pill.warn {
+      color: var(--warn);
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
     main {
-      max-width: 1380px;
+      max-width: 1500px;
       margin: 0 auto;
-      padding: 18px 20px 36px;
+      padding: 16px 18px 36px;
       display: grid;
-      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
-      gap: 18px;
+      grid-template-columns: 300px minmax(0, 1fr) 410px;
+      gap: 14px;
     }
-    aside {
-      position: sticky;
-      top: 88px;
+    nav,
+    .right-pane,
+    .main-pane {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      min-width: 0;
+    }
+    nav {
       align-self: start;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      padding: 12px;
-      max-height: calc(100vh - 112px);
+      position: sticky;
+      top: 84px;
+      max-height: calc(100vh - 104px);
       overflow: auto;
+      padding: 12px;
     }
-    aside button,
-    .toolbar button,
-    .inline-action {
-      width: 100%;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      color: var(--ink);
-      padding: 10px 11px;
-      text-align: left;
-      font: inherit;
-      cursor: pointer;
-      margin-bottom: 8px;
-    }
-    aside button:hover,
-    .toolbar button:hover,
-    .inline-action:hover {
-      border-color: var(--accent);
-      background: #ecfdf5;
-    }
-    aside button.active {
-      background: #ccfbf1;
-      border-color: var(--accent);
-    }
-    .workspace {
+    .main-pane {
+      padding: 14px;
       display: grid;
-      gap: 18px;
+      gap: 14px;
     }
-    section {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      padding: 18px;
+    .right-pane {
+      align-self: start;
+      position: sticky;
+      top: 84px;
+      max-height: calc(100vh - 104px);
+      overflow: auto;
+      padding: 12px;
     }
     h2 {
-      margin: 0 0 12px;
-      font-size: 18px;
+      margin: 0 0 10px;
+      font-size: 17px;
       letter-spacing: 0;
     }
     h3 {
       margin: 0 0 8px;
-      font-size: 15px;
+      font-size: 14px;
       letter-spacing: 0;
+    }
+    .nav-title {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 12px 0 7px;
+      text-transform: uppercase;
+    }
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    button:hover {
+      border-color: var(--accent);
+      background: #f0fdfa;
+    }
+    .nav-button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 9px 10px;
+      margin-bottom: 7px;
+      min-height: 38px;
+    }
+    .nav-button.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+    }
+    .file-button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 7px 8px;
+      margin-bottom: 5px;
+      font-size: 13px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+    .section {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      padding: 12px;
+      background: var(--surface);
+      min-height: 110px;
+    }
+    .module-row {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr) 120px;
+      gap: 10px;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0;
+    }
+    .module-row:first-child {
+      padding-top: 0;
+    }
+    .module-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+    .muted {
+      color: var(--muted);
     }
     .flow {
       display: grid;
-      grid-template-columns: repeat(5, minmax(130px, 1fr));
-      gap: 10px;
-    }
-    .flow-node {
-      border: 1px solid var(--line);
-      min-height: 92px;
-      padding: 12px;
-      background: var(--surface-2);
-    }
-    .flow-node strong {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--accent);
-    }
-    .flow-node span {
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .two-col {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
-      gap: 16px;
-    }
-    .toolbar {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(160px, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .toolbar button {
-      margin: 0;
-      text-align: center;
-      min-height: 44px;
-    }
-    .input-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 120px;
+      grid-template-columns: repeat(7, minmax(96px, 1fr));
       gap: 8px;
       margin-bottom: 12px;
     }
+    .flow div {
+      border: 1px solid var(--line);
+      background: var(--subtle);
+      padding: 9px;
+      min-height: 66px;
+      font-size: 13px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .toolbar button {
+      min-height: 38px;
+      padding: 8px 11px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 128px;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
     input,
-    textarea {
+    textarea,
+    select {
       width: 100%;
       border: 1px solid var(--line);
       background: var(--surface);
       color: var(--ink);
-      font: inherit;
-      padding: 10px 11px;
+      padding: 9px 10px;
     }
     textarea {
-      min-height: 90px;
+      min-height: 116px;
       resize: vertical;
     }
-    .inline-action {
-      margin: 0;
-      text-align: center;
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 640px;
+      font-size: 13px;
+    }
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--subtle);
+      color: var(--muted);
+      font-weight: 600;
     }
     pre {
       margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
       background: var(--code);
       color: #e5e7eb;
-      padding: 14px;
-      min-height: 230px;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 300px;
+      font-size: 13px;
       overflow: auto;
-      font-size: 13px;
     }
-    .facts {
+    .doc-body {
+      border: 1px solid var(--line);
+      background: #fbfcfe;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 13px;
+      max-height: 58vh;
+      overflow: auto;
+    }
+    .hidden {
+      display: none;
+    }
+    .split {
       display: grid;
-      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 12px;
     }
-    .fact {
+    .checkline {
       border-left: 4px solid var(--accent);
-      background: var(--surface-2);
-      padding: 10px 12px;
+      background: var(--subtle);
+      padding: 9px 10px;
+      margin-bottom: 8px;
     }
-    .fact b {
-      display: block;
-      margin-bottom: 2px;
+    .danger {
+      color: var(--danger);
     }
-    .small {
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .ok {
-      color: var(--ok);
-      font-weight: 600;
-    }
-    .warn {
-      color: var(--warn);
-      font-weight: 600;
-    }
-    @media (max-width: 900px) {
-      main,
-      .two-col {
-        grid-template-columns: 1fr;
+    @media (max-width: 1180px) {
+      main {
+        grid-template-columns: 260px minmax(0, 1fr);
       }
-      aside {
+      .right-pane {
+        grid-column: 1 / -1;
         position: static;
         max-height: none;
       }
       .flow {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 780px) {
+      .header-inner,
+      main,
+      .grid-2,
+      .grid-3,
+      .split,
+      .form-row {
         grid-template-columns: 1fr;
       }
-      .toolbar {
-        grid-template-columns: 1fr;
+      nav {
+        position: static;
+        max-height: none;
       }
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-      .status-strip {
+      .status {
         justify-content: flex-start;
+      }
+      .flow {
+        grid-template-columns: 1fr;
+      }
+      .module-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="topbar">
+    <div class="header-inner">
       <div>
-        <h1>AI 工作台共享 MD 系统运行演示</h1>
-        <p class="subtitle">不是纯文档：当前页面连接本地服务，实时读取仓库、索引、StartPack 和自检结果。</p>
+        <h1>AI 工作台记忆面板</h1>
+        <p class="subtitle">管理共享 MD 系统：结构、索引、接手包、资源、提案和自检。</p>
       </div>
-      <div class="status-strip" id="status-strip">
-        <span class="pill">正在连接本地服务</span>
-      </div>
+      <div class="status" id="status">连接中</div>
     </div>
   </header>
 
   <main>
-    <aside>
-      <button class="active" data-step="framework">系统框架</button>
-      <button data-step="handoff">新窗口接手</button>
-      <button data-step="resolve">查页面22</button>
-      <button data-step="proposal">沉淀提案</button>
-      <button data-step="secret">凭据规则</button>
-      <button data-step="check">自检验收</button>
-    </aside>
+    <nav>
+      <h2>工作区</h2>
+      <button class="nav-button active" data-view="structure">系统结构</button>
+      <button class="nav-button" data-view="handoff">新窗口接手</button>
+      <button class="nav-button" data-view="index">实战索引</button>
+      <button class="nav-button" data-view="resources">资源登记</button>
+      <button class="nav-button" data-view="proposals">待审核提案</button>
+      <button class="nav-button" data-view="secrets">凭据规则</button>
+      <button class="nav-button" data-view="check">系统自检</button>
+      <div class="nav-title">核心文件</div>
+      <div id="file-list"></div>
+    </nav>
 
-    <div class="workspace">
-      <section>
-        <h2>系统框架</h2>
-        <div class="flow" id="framework-flow"></div>
+    <div class="main-pane">
+      <section id="view-structure">
+        <h2>系统结构</h2>
+        <div class="flow" id="workflow"></div>
+        <div id="modules"></div>
       </section>
 
-      <section>
-        <h2>实际工作流演示</h2>
+      <section id="view-handoff" class="hidden">
+        <h2>新窗口接手</h2>
         <div class="toolbar">
-          <button data-run="handoff">跑新窗口接手</button>
-          <button data-run="resolve">跑页面22索引</button>
-          <button data-run="proposal">生成待审核提案</button>
-          <button data-run="check">跑系统自检</button>
+          <button id="load-startpack">生成接手包</button>
+          <button data-open-doc="AI入口.md">打开 AI入口</button>
+          <button data-open-doc="01_项目/AI工作台/StartPack.md">打开 StartPack</button>
+          <button data-open-doc="01_项目/AI工作台/当前状态.md">打开当前状态</button>
         </div>
-        <div class="two-col">
-          <div>
-            <div class="input-row">
-              <input id="query" value="页面22" aria-label="索引查询">
-              <button class="inline-action" id="resolve-btn">查索引</button>
-            </div>
-            <textarea id="proposal-detail" aria-label="提案内容">用户说页面22时，AI 应先查别名词典和页面索引，再读项目 StartPack。</textarea>
-            <button class="inline-action" id="proposal-btn">生成一条演示提案</button>
-          </div>
-          <div class="facts" id="facts"></div>
-        </div>
+        <div id="handoff-summary" class="grid-2"></div>
       </section>
 
-      <section>
-        <h2>运行输出</h2>
-        <pre id="output">等待操作。</pre>
+      <section id="view-index" class="hidden">
+        <h2>实战索引</h2>
+        <div class="form-row">
+          <input id="query" value="页面22" aria-label="查询">
+          <button id="resolve">查询</button>
+        </div>
+        <div class="toolbar">
+          <button data-query="页面22">页面22</button>
+          <button data-query="技能1">技能1</button>
+          <button data-query="小测">小测</button>
+          <button data-query="连接服务器">连接服务器</button>
+        </div>
+        <div id="index-result"></div>
+      </section>
+
+      <section id="view-resources" class="hidden">
+        <h2>资源登记</h2>
+        <div class="toolbar">
+          <button data-resource="pageBadges">页面编号</button>
+          <button data-resource="ports">端口</button>
+          <button data-resource="machines">电脑环境</button>
+          <button data-resource="secretRefs">Secret引用</button>
+          <button data-resource="serverCandidates">服务器候选</button>
+        </div>
+        <div id="resource-view"></div>
+      </section>
+
+      <section id="view-proposals" class="hidden">
+        <h2>待审核提案</h2>
+        <div class="split">
+          <div>
+            <div class="grid-2">
+              <input id="proposal-title" value="页面22接手规则补充" aria-label="提案标题">
+              <select id="proposal-kind" aria-label="提案类型">
+                <option value="memory">记忆提案</option>
+                <option value="skill">Skill提案</option>
+                <option value="resource">资源变更</option>
+              </select>
+            </div>
+            <textarea id="proposal-detail">用户说页面22时，AI 应先查别名词典和页面索引，再读项目 StartPack。</textarea>
+            <label class="muted"><input id="proposal-official" type="checkbox"> 保存到正式 `05_待审核` 目录</label>
+            <div class="toolbar">
+              <button id="create-proposal">生成提案</button>
+              <button id="load-proposals">刷新列表</button>
+            </div>
+          </div>
+          <div>
+            <div class="checkline">默认生成到 `.demo_runtime/`，不污染正式仓库。勾选后才进入正式待审核目录。</div>
+          </div>
+        </div>
+        <div id="proposal-list"></div>
+      </section>
+
+      <section id="view-secrets" class="hidden">
+        <h2>凭据规则</h2>
+        <div id="secret-policy"></div>
+      </section>
+
+      <section id="view-check" class="hidden">
+        <h2>系统自检</h2>
+        <div class="toolbar">
+          <button id="run-check">运行自检</button>
+          <button data-open-doc="scripts/check_memory_repo.py">打开检查脚本</button>
+        </div>
+        <pre id="check-output">等待运行。</pre>
       </section>
     </div>
+
+    <aside class="right-pane">
+      <h2>文件 / 输出</h2>
+      <div id="doc-meta" class="muted">选择左侧文件或运行一个操作。</div>
+      <div id="doc-body" class="doc-body">暂无内容。</div>
+    </aside>
   </main>
 
   <script>
-    const $ = (selector) => document.querySelector(selector);
-    const output = $("#output");
-    const facts = $("#facts");
-    const statusStrip = $("#status-strip");
-    const flow = $("#framework-flow");
+    const state = { structure: null, resources: null };
+    const statusEl = document.querySelector("#status");
+    const fileList = document.querySelector("#file-list");
+    const docMeta = document.querySelector("#doc-meta");
+    const docBody = document.querySelector("#doc-body");
 
-    const flowNodes = [
-      ["用户口语", "例如：页面22、小测、连接服务器、第四级窗口"],
-      ["07_实战索引", "别名、页面、技能、项目、窗口、字段契约"],
-      ["项目记忆", "StartPack、当前状态、接手说明"],
-      ["待审核/资源登记", "提案、页面编号、端口、连接信息"],
-      ["Git + 自检", "PR 审核、CODEOWNERS、check 脚本"],
-    ];
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;",
+    }[ch]));
 
-    function showJson(data) {
-      output.textContent = JSON.stringify(data, null, 2);
+    async function api(url, options) {
+      const response = await fetch(url, options);
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
     }
 
-    function setFacts(items) {
-      facts.innerHTML = items.map((item) => `
-        <div class="fact">
-          <b>${item.title}</b>
-          <span class="small">${item.body}</span>
-        </div>
-      `).join("");
-    }
-
-    async function getJson(url, options) {
-      const res = await fetch(url, options);
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
-    }
-
-    async function loadStatus() {
-      const data = await getJson("/api/status");
-      statusStrip.innerHTML = [
+    function renderStatus(data) {
+      statusEl.innerHTML = [
         `<span class="pill ${data.check.code === 0 ? "ok" : "warn"}">${data.check.code === 0 ? "CHECK_PASS" : "CHECK_FAIL"}</span>`,
-        `<span class="pill">${data.markdownFiles} 个 MD 文件</span>`,
-        `<span class="pill">${data.workingTreeClean ? "Git 干净" : "Git 有改动"}</span>`,
+        `<span class="pill">${data.markdownFiles} 个 MD</span>`,
+        `<span class="pill ${data.workingTreeClean ? "ok" : "warn"}">${data.workingTreeClean ? "Git 干净" : "Git 有改动"}</span>`,
       ].join("");
-      flow.innerHTML = flowNodes.map(([title, body]) => `
-        <div class="flow-node">
-          <strong>${title}</strong>
-          <span>${body}</span>
+    }
+
+    function table(rows) {
+      if (!rows || rows.length === 0) return "<div class='muted'>暂无数据。</div>";
+      const keys = Object.keys(rows[0]);
+      return `<div class="table-wrap"><table><thead><tr>${keys.map((key) => `<th>${escapeHtml(key)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${keys.map((key) => `<td>${escapeHtml(row[key])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    }
+
+    function renderStructure(data) {
+      document.querySelector("#workflow").innerHTML = data.workflow.map((item, index) => `<div><b>${index + 1}</b><br>${escapeHtml(item)}</div>`).join("");
+      document.querySelector("#modules").innerHTML = data.modules.map((item) => `
+        <div class="module-row">
+          <div><b>${escapeHtml(item.module)}</b><br><span class="muted">${escapeHtml(item.role)}</span></div>
+          <div>${escapeHtml(item.purpose)}<br><span class="muted">读取：${escapeHtml(item.defaultRead)}</span></div>
+          <div>${item.files.map((file) => `<button class="file-button" data-open-doc="${escapeHtml(file)}">${escapeHtml(file.split("/").pop())}</button>`).join("")}</div>
         </div>
       `).join("");
-      setFacts([
-        { title: "当前仓库", body: data.repo },
-        { title: "最新提交", body: data.gitLatest || "未读取到" },
-        { title: "远端", body: data.gitRemote || "未绑定" },
-      ]);
-      showJson(data);
+      const priority = [
+        "AI入口.md",
+        "总览.md",
+        "07_实战索引/README.md",
+        "07_实战索引/别名词典.md",
+        "07_实战索引/页面索引.md",
+        "01_项目/AI工作台/StartPack.md",
+        "01_项目/AI工作台/当前状态.md",
+        "05_待审核/README.md",
+        "04_资源登记/页面角标编号.md",
+        "00_规则/敏感信息规则.md",
+      ];
+      fileList.innerHTML = priority.map((file) => `<button class="file-button" data-open-doc="${escapeHtml(file)}">${escapeHtml(file)}</button>`).join("");
     }
 
-    async function runHandoff() {
-      const data = await getJson("/api/start-pack");
-      setFacts([
-        { title: "AI 先读这些文件", body: data.filesRead.join(" -> ") },
-        { title: "当前目标", body: data.goal.replace(/\n/g, " ") },
-        { title: "已确认规则", body: data.confirmedRules.replace(/\n/g, " ") },
-      ]);
-      showJson(data);
+    async function openDoc(path) {
+      const data = await api(`/api/document?path=${encodeURIComponent(path)}`);
+      const meta = data.frontmatter || {};
+      docMeta.innerHTML = `<b>${escapeHtml(data.path)}</b><br>状态：${escapeHtml(meta.status || "-")}　类型：${escapeHtml(meta.type || "-")}　敏感：${escapeHtml(meta.sensitivity || "-")}${data.restricted ? "　<span class='danger'>已脱敏</span>" : ""}`;
+      docBody.textContent = data.body;
     }
 
-    async function runResolve() {
-      const query = encodeURIComponent($("#query").value || "页面22");
-      const data = await getJson(`/api/resolve?q=${query}`);
-      setFacts([
-        { title: "用户说法", body: data.query },
-        { title: "标准对象", body: data.standard },
-        { title: "下一步", body: data.page ? `${data.page["页面名"]}，入口：${data.page["入口/路径"]}` : "未命中页面，查看输出" },
-      ]);
-      showJson(data);
+    async function loadStartPack() {
+      const data = await api("/api/start-pack");
+      document.querySelector("#handoff-summary").innerHTML = [
+        ["读取文件", data.filesRead.join("\n")],
+        ["当前目标", data.goal],
+        ["当前状态", data.state],
+        ["已确认规则", data.confirmedRules],
+      ].map(([title, body]) => `<div class="panel"><h3>${escapeHtml(title)}</h3><div class="muted">${escapeHtml(body)}</div></div>`).join("");
+      docMeta.innerHTML = "<b>新窗口接手输出</b>";
+      docBody.textContent = JSON.stringify(data, null, 2);
     }
 
-    async function runProposal() {
-      const data = await getJson("/api/proposal", {
+    async function resolveQuery(query) {
+      const data = await api(`/api/resolve?q=${encodeURIComponent(query)}`);
+      const rows = [
+        { 项: "用户说法", 值: data.query },
+        { 项: "标准编号", 值: data.standard },
+        { 项: "页面命中", 值: data.page ? `${data.page["页面名"]} / ${data.page["入口/路径"]}` : "无" },
+        { 项: "技能命中", 值: data.skill ? `${data.skill["技能名"]} / ${data.skill["建议文档"]}` : "无" },
+      ];
+      document.querySelector("#index-result").innerHTML = table(rows);
+      docMeta.innerHTML = "<b>索引解析结果</b>";
+      docBody.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function loadResources(kind = "pageBadges") {
+      if (!state.resources) state.resources = await api("/api/resources");
+      const names = {
+        pageBadges: "页面编号",
+        ports: "端口",
+        machines: "电脑环境",
+        secretRefs: "Secret 引用",
+        serverCandidates: "服务器候选",
+      };
+      document.querySelector("#resource-view").innerHTML = `<h3>${names[kind]}</h3>${table(state.resources[kind])}`;
+      docMeta.innerHTML = `<b>${names[kind]} JSON</b>`;
+      docBody.textContent = JSON.stringify(state.resources[kind], null, 2);
+    }
+
+    async function loadProposals() {
+      const data = await api("/api/proposals");
+      document.querySelector("#proposal-list").innerHTML = table(data.proposals);
+      docMeta.innerHTML = "<b>待审核提案列表</b>";
+      docBody.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function createProposal() {
+      const data = await api("/api/proposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: "演示提案-页面22接手规则",
-          detail: $("#proposal-detail").value,
+          title: document.querySelector("#proposal-title").value,
+          detail: document.querySelector("#proposal-detail").value,
+          kind: document.querySelector("#proposal-kind").value,
+          official: document.querySelector("#proposal-official").checked,
         }),
       });
-      setFacts([
-        { title: "提案状态", body: "proposed，不会直接进入正式规则" },
-        { title: "生成位置", body: data.path },
-        { title: "说明", body: "该文件在 .demo_runtime/，演示完不会污染 Git 工作区" },
-      ]);
-      showJson(data);
+      docMeta.innerHTML = `<b>已生成提案</b><br>${escapeHtml(data.path)}`;
+      docBody.textContent = data.content;
+      await loadProposals();
     }
 
-    async function runSecret() {
-      const data = await getJson("/api/secret-policy");
-      setFacts([
-        { title: "受限文档", body: data.restrictedFile },
-        { title: "允许条件", body: data.allowedWhen.join("；") },
-        { title: "演示包", body: data.demoExport },
-      ]);
-      showJson(data);
+    async function loadSecretPolicy() {
+      const data = await api("/api/secret-policy");
+      document.querySelector("#secret-policy").innerHTML = `
+        <div class="grid-2">
+          <div class="panel"><h3>规则文件</h3><div>${escapeHtml(data.ruleFile)}</div></div>
+          <div class="panel"><h3>受限凭据文件</h3><div>${escapeHtml(data.restrictedFile)}</div></div>
+        </div>
+        <h3>允许记录真实凭据的条件</h3>
+        ${table(data.allowedWhen.map((item, index) => ({ 序号: index + 1, 条件: item })))}
+        <div class="checkline">${escapeHtml(data.demoExport)}</div>
+      `;
+      docMeta.innerHTML = "<b>凭据规则</b>";
+      docBody.textContent = JSON.stringify(data, null, 2);
     }
 
     async function runCheck() {
-      const data = await getJson("/api/check");
-      setFacts([
-        { title: "检查结果", body: data.check.code === 0 ? "通过" : "失败" },
-        { title: "检查脚本", body: "scripts/check_memory_repo.py" },
-        { title: "检查范围", body: "frontmatter、重复 ID、敏感值、页面编号、项目必需文件" },
-      ]);
-      showJson(data);
+      const data = await api("/api/check");
+      document.querySelector("#check-output").textContent = data.check.output;
+      docMeta.innerHTML = `<b>系统自检</b><br>退出码：${data.check.code}`;
+      docBody.textContent = JSON.stringify(data, null, 2);
     }
 
-    const actions = {
-      framework: loadStatus,
-      handoff: runHandoff,
-      resolve: runResolve,
-      proposal: runProposal,
-      secret: runSecret,
-      check: runCheck,
-    };
+    function switchView(name) {
+      document.querySelectorAll("[id^='view-']").forEach((el) => el.classList.add("hidden"));
+      document.querySelector(`#view-${name}`).classList.remove("hidden");
+      document.querySelectorAll(".nav-button").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
+      if (name === "handoff") loadStartPack();
+      if (name === "resources") loadResources();
+      if (name === "proposals") loadProposals();
+      if (name === "secrets") loadSecretPolicy();
+      if (name === "check") runCheck();
+    }
 
-    document.querySelectorAll("aside button").forEach((button) => {
-      button.addEventListener("click", async () => {
-        document.querySelectorAll("aside button").forEach((b) => b.classList.remove("active"));
-        button.classList.add("active");
-        await actions[button.dataset.step]();
-      });
+    document.addEventListener("click", async (event) => {
+      const target = event.target.closest("button");
+      if (!target) return;
+      if (target.dataset.view) switchView(target.dataset.view);
+      if (target.dataset.openDoc) await openDoc(target.dataset.openDoc);
+      if (target.dataset.query) {
+        document.querySelector("#query").value = target.dataset.query;
+        await resolveQuery(target.dataset.query);
+      }
+      if (target.dataset.resource) await loadResources(target.dataset.resource);
     });
-    document.querySelectorAll("[data-run]").forEach((button) => {
-      button.addEventListener("click", () => actions[button.dataset.run]());
-    });
-    $("#resolve-btn").addEventListener("click", runResolve);
-    $("#proposal-btn").addEventListener("click", runProposal);
 
-    loadStatus().catch((error) => {
-      output.textContent = String(error);
-      statusStrip.innerHTML = '<span class="pill warn">本地服务连接失败</span>';
+    document.querySelector("#load-startpack").addEventListener("click", loadStartPack);
+    document.querySelector("#resolve").addEventListener("click", () => resolveQuery(document.querySelector("#query").value || "页面22"));
+    document.querySelector("#create-proposal").addEventListener("click", createProposal);
+    document.querySelector("#load-proposals").addEventListener("click", loadProposals);
+    document.querySelector("#run-check").addEventListener("click", runCheck);
+
+    async function boot() {
+      const [status, structure] = await Promise.all([api("/api/status"), api("/api/structure")]);
+      state.structure = structure;
+      renderStatus(status);
+      renderStructure(structure);
+      await openDoc("README.md");
+    }
+
+    boot().catch((error) => {
+      statusEl.innerHTML = `<span class="pill warn">面板启动失败</span>`;
+      docBody.textContent = String(error);
     });
   </script>
 </body>

@@ -16,14 +16,126 @@ from urllib.parse import parse_qs, unquote, urlparse
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_DIR = ROOT / ".demo_runtime" / "proposals"
 FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
+RESTRICTED_DOC = re.compile(r"(?ms)\A---\n.*?sensitivity:\s*restricted\s*\n.*?credential_allowed:\s*true\s*\n.*?\n---\n")
+
+STRUCTURE = [
+    {
+        "module": "00_规则",
+        "role": "系统治理层",
+        "purpose": "定义 AI 读取、安全、Git、审核、状态生命周期、阶段边界。",
+        "files": [
+            "00_规则/AI读取规则.md",
+            "00_规则/敏感信息规则.md",
+            "00_规则/Git协作规则.md",
+            "00_规则/审核规则.md",
+            "00_规则/阶段边界.md",
+        ],
+        "defaultRead": "按任务读取",
+    },
+    {
+        "module": "01_项目",
+        "role": "项目记忆层",
+        "purpose": "保存项目 StartPack、当前状态、接手说明、页面编号、决策和证据。",
+        "files": [
+            "01_项目/AI工作台/StartPack.md",
+            "01_项目/AI工作台/当前状态.md",
+            "01_项目/AI工作台/接手说明.md",
+            "01_项目/AI工作台/历史证据.md",
+        ],
+        "defaultRead": "接手项目时读取",
+    },
+    {
+        "module": "07_实战索引",
+        "role": "刘大式快速定位层",
+        "purpose": "把页面22、技能1、小测、第四级窗口等口语映射成标准对象。",
+        "files": [
+            "07_实战索引/别名词典.md",
+            "07_实战索引/页面索引.md",
+            "07_实战索引/技能索引.md",
+            "07_实战索引/窗口索引.md",
+            "07_实战索引/字段契约索引.md",
+            "07_实战索引/连接信息索引.md",
+        ],
+        "defaultRead": "页面、技能、字段、窗口任务优先读取",
+    },
+    {
+        "module": "03_工作流",
+        "role": "操作流程层",
+        "purpose": "定义新窗口接手、会议沉淀、测试 Agent 和资源申请怎么走。",
+        "files": [
+            "03_工作流/新窗口接手流程.md",
+            "03_工作流/会议沉淀流程.md",
+            "03_工作流/测试Agent流程.md",
+            "03_工作流/资源申请流程.md",
+        ],
+        "defaultRead": "按任务读取",
+    },
+    {
+        "module": "04_资源登记",
+        "role": "资源台账层",
+        "purpose": "登记页面编号、端口、电脑环境、secret 引用和服务器候选。",
+        "files": [
+            "04_资源登记/页面角标编号.md",
+            "04_资源登记/端口占用.md",
+            "04_资源登记/电脑环境.md",
+            "04_资源登记/secret引用.md",
+            "04_资源登记/服务器候选.md",
+        ],
+        "defaultRead": "资源任务读取",
+    },
+    {
+        "module": "05_待审核",
+        "role": "沉淀审核层",
+        "purpose": "AI 或个人总结先变成 proposed，审核后再进入正式记忆。",
+        "files": [
+            "05_待审核/README.md",
+            "05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md",
+            "05_待审核/Skill提案/README.md",
+            "05_待审核/资源变更提案/README.md",
+        ],
+        "defaultRead": "审核任务读取",
+    },
+]
 
 
 def read_text(rel: str) -> str:
     return (ROOT / rel).read_text(encoding="utf-8")
 
 
+def safe_relative_path(raw: str) -> Path:
+    rel = unquote(raw).strip().lstrip("/")
+    path = (ROOT / rel).resolve()
+    if ROOT not in path.parents and path != ROOT:
+        raise ValueError("path outside repository")
+    if ".git" in path.parts or ".demo_runtime" in path.parts:
+        raise ValueError("path is not readable from panel")
+    return path
+
+
 def strip_frontmatter(text: str) -> str:
     return FRONTMATTER.sub("", text, count=1).strip()
+
+
+def parse_frontmatter(text: str) -> dict[str, str]:
+    match = FRONTMATTER.match(text)
+    if not match:
+        return {}
+    data: dict[str, str] = {}
+    for line in match.group(1).splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def markdown_files() -> list[str]:
+    files: list[str] = []
+    for path in ROOT.rglob("*.md"):
+        if any(part in path.parts for part in (".git", ".github", ".demo_runtime", "dist", "__pycache__")):
+            continue
+        files.append(str(path.relative_to(ROOT)))
+    return sorted(files)
 
 
 def run(command: list[str]) -> dict[str, object]:
@@ -53,19 +165,36 @@ def markdown_files_count() -> int:
 def parse_table(rel: str) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     headers: list[str] | None = None
-    for raw in read_text(rel).splitlines():
+    lines = read_text(rel).splitlines()
+    index = 0
+    def clean_cell(value: str) -> str:
+        value = value.strip()
+        if value.startswith("`") and value.endswith("`") and value.count("`") == 2:
+            return value[1:-1]
+        return value
+
+    while index < len(lines):
+        raw = lines[index]
         line = raw.strip()
         if not line.startswith("|"):
+            headers = None
+            index += 1
             continue
-        cells = [cell.strip().strip("`") for cell in line.strip("|").split("|")]
-        if all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
-            continue
-        if headers is None:
+        cells = [clean_cell(cell) for cell in line.strip("|").split("|")]
+        next_line = lines[index + 1].strip() if index + 1 < len(lines) else ""
+        next_cells = [cell.strip() for cell in next_line.strip("|").split("|")] if next_line.startswith("|") else []
+        if next_cells and all(re.fullmatch(r":?-{3,}:?", cell) for cell in next_cells):
             headers = cells
+            index += 2
+            continue
+        if all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+            index += 1
             continue
         if len(cells) != len(headers):
+            index += 1
             continue
         rows.append(dict(zip(headers, cells)))
+        index += 1
     return rows
 
 
@@ -90,14 +219,42 @@ def status_payload() -> dict[str, object]:
         "gitRemote": remote["output"],
         "workingTreeClean": clean["output"] == "",
         "markdownFiles": markdown_files_count(),
-        "modules": [
-            {"name": "00_规则", "purpose": "读取、安全、Git、审核、生命周期"},
-            {"name": "01_项目", "purpose": "StartPack、当前状态、接手说明"},
-            {"name": "03_工作流", "purpose": "接手、会议沉淀、测试 Agent、资源申请"},
-            {"name": "04_资源登记", "purpose": "页面编号、端口、电脑、secret 引用"},
-            {"name": "05_待审核", "purpose": "记忆、Skill、资源变更先提案后合并"},
-            {"name": "07_实战索引", "purpose": "刘大式口语映射和快速定位"},
+        "modules": STRUCTURE,
+    }
+
+
+def structure_payload() -> dict[str, object]:
+    return {
+        "workflow": [
+            "用户口语/需求",
+            "AI入口.md 路由",
+            "07_实战索引定位",
+            "01_项目 StartPack 接手",
+            "03_工作流执行",
+            "05_待审核沉淀",
+            "Git PR + 自检合并",
         ],
+        "modules": STRUCTURE,
+        "files": markdown_files(),
+    }
+
+
+def document_payload(rel: str) -> dict[str, object]:
+    path = safe_relative_path(rel)
+    if not path.exists() or not path.is_file():
+        raise FileNotFoundError(rel)
+    text = path.read_text(encoding="utf-8")
+    data = parse_frontmatter(text)
+    restricted = RESTRICTED_DOC.search(text) is not None
+    if restricted:
+        body = "# 受限凭据文档\n\n该文档允许核心成员记录真实协作凭据，面板默认不展示正文。需要查看请在本机文件中打开，并确认仓库访问范围。"
+    else:
+        body = strip_frontmatter(text)
+    return {
+        "path": str(path.relative_to(ROOT)),
+        "frontmatter": data,
+        "restricted": restricted,
+        "body": body,
     }
 
 
@@ -152,14 +309,74 @@ def start_pack_payload() -> dict[str, object]:
     }
 
 
+def resources_payload() -> dict[str, object]:
+    return {
+        "pageBadges": parse_table("04_资源登记/页面角标编号.md"),
+        "ports": parse_table("04_资源登记/端口占用.md"),
+        "machines": parse_table("04_资源登记/电脑环境.md"),
+        "secretRefs": parse_table("04_资源登记/secret引用.md"),
+        "serverCandidates": parse_table("04_资源登记/服务器候选.md"),
+    }
+
+
+def proposal_list_payload() -> dict[str, object]:
+    proposals: list[dict[str, str]] = []
+    roots = [
+        ("正式记忆提案", ROOT / "05_待审核" / "记忆提案"),
+        ("正式Skill提案", ROOT / "05_待审核" / "Skill提案"),
+        ("正式资源提案", ROOT / "05_待审核" / "资源变更提案"),
+        ("演示运行提案", RUNTIME_DIR),
+    ]
+    for category, directory in roots:
+        if not directory.exists():
+            continue
+        for path in sorted(directory.glob("*.md"), reverse=True):
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            data = parse_frontmatter(text)
+            title_match = re.search(r"^#\s+(.+)$", strip_frontmatter(text), re.MULTILINE)
+            proposals.append(
+                {
+                    "category": category,
+                    "path": str(path.relative_to(ROOT)) if ROOT in path.resolve().parents else str(path),
+                    "id": data.get("id", ""),
+                    "status": data.get("status", ""),
+                    "owner": data.get("owner", ""),
+                    "title": title_match.group(1) if title_match else path.stem,
+                }
+            )
+    return {"proposals": proposals}
+
+
 def proposal_payload(body: bytes) -> dict[str, object]:
     data = json.loads(body.decode("utf-8") or "{}")
     title = str(data.get("title") or "演示提案-页面22接手规则").strip()
     detail = str(data.get("detail") or "用户说页面22时，AI 应先查别名词典和页面索引，再读项目 StartPack。").strip()
+    official = bool(data.get("official"))
+    kind = str(data.get("kind") or "memory")
+    if kind not in {"memory", "skill", "resource"}:
+        kind = "memory"
     now = datetime.now().astimezone()
-    proposal_id = now.strftime("DEMO-PROPOSAL-%Y%m%d-%H%M%S")
-    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
-    path = RUNTIME_DIR / f"{proposal_id}.md"
+    date = now.strftime("%Y%m%d")
+    timestamp = now.strftime("%H%M%S")
+    if official:
+        dir_map = {
+            "memory": ROOT / "05_待审核" / "记忆提案",
+            "skill": ROOT / "05_待审核" / "Skill提案",
+            "resource": ROOT / "05_待审核" / "资源变更提案",
+        }
+        id_map = {
+            "memory": "PROPOSAL-MEMORY",
+            "skill": "PROPOSAL-SKILL",
+            "resource": "PROPOSAL-RESOURCE",
+        }
+        directory = dir_map[kind]
+        proposal_id = f"{id_map[kind]}-{date}-{timestamp}"
+    else:
+        directory = RUNTIME_DIR
+        proposal_id = f"DEMO-PROPOSAL-{date}-{timestamp}"
+    directory.mkdir(parents=True, exist_ok=True)
+    safe_title = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff]+", "-", title).strip("-") or "untitled"
+    path = directory / f"{date}-{safe_title}.md"
     content = f"""---
 id: {proposal_id}
 type: proposal
@@ -191,7 +408,7 @@ source: 运行演示页面
 待审核
 """
     path.write_text(content, encoding="utf-8")
-    return {"path": str(path), "content": content}
+    return {"path": str(path), "official": official, "content": content}
 
 
 def secret_policy_payload() -> dict[str, object]:
@@ -254,6 +471,16 @@ class DemoHandler(BaseHTTPRequestHandler):
         if path == "/api/status":
             self.send_json(status_payload())
             return
+        if path == "/api/structure":
+            self.send_json(structure_payload())
+            return
+        if path == "/api/document":
+            rel = parse_qs(parsed.query).get("path", ["README.md"])[0]
+            try:
+                self.send_json(document_payload(rel))
+            except (FileNotFoundError, ValueError) as exc:
+                self.send_json({"error": str(exc)}, status=404)
+            return
         if path == "/api/start-pack":
             self.send_json(start_pack_payload())
             return
@@ -263,6 +490,12 @@ class DemoHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/check":
             self.send_json({"check": run(["python3", "scripts/check_memory_repo.py"])})
+            return
+        if path == "/api/resources":
+            self.send_json(resources_payload())
+            return
+        if path == "/api/proposals":
+            self.send_json(proposal_list_payload())
             return
         if path == "/api/secret-policy":
             self.send_json(secret_policy_payload())
