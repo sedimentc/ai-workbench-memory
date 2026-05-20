@@ -15,6 +15,7 @@ OUT_MD = OUT_DIR / "演示包.md"
 OUT_HTML = OUT_DIR / "index.html"
 
 DEMO_FILES = [
+    "10_启动材料/当前系统状态.md",
     "演示入口.md",
     "README.md",
     "AI入口.md",

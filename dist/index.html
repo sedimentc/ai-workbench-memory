@@ -135,26 +135,345 @@
 <body>
   <header>
     <h1>AI 工作台共享 MD 系统演示包</h1>
-    <p>生成时间：2026-05-19T20:50:40+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
+    <p>生成时间：2026-05-20T10:22:47+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
   </header>
   <main>
-    <nav><a href="#section-1">1. 演示入口.md</a>
-<a href="#section-2">2. README.md</a>
-<a href="#section-3">3. AI入口.md</a>
-<a href="#section-4">4. 总览.md</a>
-<a href="#section-5">5. 01_项目/AI工作台/StartPack.md</a>
-<a href="#section-6">6. 01_项目/AI工作台/当前状态.md</a>
-<a href="#section-7">7. 01_项目/AI工作台/历史证据.md</a>
-<a href="#section-8">8. 05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</a>
-<a href="#section-9">9. 04_资源登记/页面角标编号.md</a>
-<a href="#section-10">10. 04_资源登记/服务器候选.md</a>
-<a href="#section-11">11. 10_启动材料/功能对照表.md</a>
-<a href="#section-12">12. 10_启动材料/二期中心服务路线图.md</a>
-<a href="#section-13">13. 10_启动材料/逐分钟演示讲稿.md</a>
-<a href="#section-14">14. 10_启动材料/现场答辩问答.md</a>
-<a href="#section-15">15. 10_启动材料/新窗口演示提示词.md</a></nav>
+    <nav><a href="#section-1">1. 10_启动材料/当前系统状态.md</a>
+<a href="#section-2">2. 演示入口.md</a>
+<a href="#section-3">3. README.md</a>
+<a href="#section-4">4. AI入口.md</a>
+<a href="#section-5">5. 总览.md</a>
+<a href="#section-6">6. 01_项目/AI工作台/StartPack.md</a>
+<a href="#section-7">7. 01_项目/AI工作台/当前状态.md</a>
+<a href="#section-8">8. 01_项目/AI工作台/历史证据.md</a>
+<a href="#section-9">9. 05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</a>
+<a href="#section-10">10. 04_资源登记/页面角标编号.md</a>
+<a href="#section-11">11. 04_资源登记/服务器候选.md</a>
+<a href="#section-12">12. 10_启动材料/功能对照表.md</a>
+<a href="#section-13">13. 10_启动材料/二期中心服务路线图.md</a>
+<a href="#section-14">14. 10_启动材料/逐分钟演示讲稿.md</a>
+<a href="#section-15">15. 10_启动材料/现场答辩问答.md</a>
+<a href="#section-16">16. 10_启动材料/新窗口演示提示词.md</a></nav>
     <div>
 <section id="section-1">
+  <div class="source">来源文件：<code>10_启动材料/当前系统状态.md</code></div>
+  <h1>当前系统状态：AI 工作台共享 MD 系统</h1>
+
+<h2>一句话结论</h2>
+
+<p>当前系统已经完成第一阶段本地版本：GitHub + Markdown 协作记忆库已经搭好，可以直接演示；新窗口接手能力已经做过一次独立实测，结论为通过。</p>
+
+<p>当前还没有推到 GitHub，因为本机没有可用的 GitHub 登录能力：没有 `gh` 命令、SSH 没有 GitHub 公钥权限、HTTPS 凭据也未配置。</p>
+
+<h2>当前仓库位置</h2>
+
+<pre><code>/Users/sediment/Documents/ai-workbench-memory</code></pre>
+
+<h2>当前演示入口</h2>
+
+<p>首选打开：</p>
+
+<pre><code>/Users/sediment/Documents/ai-workbench-memory/dist/index.html</code></pre>
+
+<p>备用 Markdown 演示包：</p>
+
+<pre><code>/Users/sediment/Documents/ai-workbench-memory/dist/演示包.md</code></pre>
+
+<p>演示前检查：</p>
+
+<pre><code>cd /Users/sediment/Documents/ai-workbench-memory
+python3 scripts/run_demo_check.py</code></pre>
+
+<p>当前检查结果：</p>
+
+<pre><code>DEMO_READY
+CHECK_PASS</code></pre>
+
+<h2>当前已完成内容</h2>
+
+<h3>1. AI 入口与总览</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `AI入口.md`</p>
+<p class="bullet">- `总览.md`</p>
+<p class="bullet">- `README.md`</p>
+<p class="bullet">- `演示入口.md`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- 新 AI 窗口先读入口，不直接乱读全仓库。</p>
+<p class="bullet">- AI 根据任务类型读取项目记忆、工作流、资源登记或技能库。</p>
+<p class="bullet">- 普通任务控制读取文件数量，避免上下文污染。</p>
+
+<h3>2. AI 工作台样板项目</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `01_项目/AI工作台/项目总览.md`</p>
+<p class="bullet">- `01_项目/AI工作台/StartPack.md`</p>
+<p class="bullet">- `01_项目/AI工作台/当前状态.md`</p>
+<p class="bullet">- `01_项目/AI工作台/接手说明.md`</p>
+<p class="bullet">- `01_项目/AI工作台/页面编号.md`</p>
+<p class="bullet">- `01_项目/AI工作台/决策记录.md`</p>
+<p class="bullet">- `01_项目/AI工作台/历史证据.md`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- 用 AI 工作台作为第一版样板项目。</p>
+<p class="bullet">- 将当前事实和历史证据分开。</p>
+<p class="bullet">- 新窗口优先读取 StartPack 和当前状态。</p>
+<p class="bullet">- 会议、聊天、旧方案只能作为证据，不能直接当正式规则。</p>
+
+<h3>3. 全局规则</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `00_规则/AI读取规则.md`</p>
+<p class="bullet">- `00_规则/敏感信息规则.md`</p>
+<p class="bullet">- `00_规则/Git协作规则.md`</p>
+<p class="bullet">- `00_规则/状态生命周期.md`</p>
+<p class="bullet">- `00_规则/文档元信息规则.md`</p>
+<p class="bullet">- `00_规则/审核规则.md`</p>
+<p class="bullet">- `00_规则/阶段边界.md`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- 规范 AI 怎么读文档。</p>
+<p class="bullet">- 规范什么内容能成为正式规则。</p>
+<p class="bullet">- 规范草稿、待审核、当前有效、废弃等状态。</p>
+<p class="bullet">- 规范敏感信息不能写入文档。</p>
+<p class="bullet">- 明确第一阶段不做数据库、不做中心服务。</p>
+
+<h3>4. 资源登记</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `04_资源登记/页面角标编号.md`</p>
+<p class="bullet">- `04_资源登记/端口占用.md`</p>
+<p class="bullet">- `04_资源登记/电脑环境.md`</p>
+<p class="bullet">- `04_资源登记/secret引用.md`</p>
+<p class="bullet">- `04_资源登记/服务器候选.md`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- 第一阶段先用 MD + GitHub 审核登记页面编号、端口、电脑环境、secret 引用。</p>
+<p class="bullet">- 页面角标编号全局唯一。</p>
+<p class="bullet">- 敏感信息只写 `secret://...` 引用，不写真实值。</p>
+<p class="bullet">- 数据库和服务器后置，等刘大确认哪台电脑作为服务器后再做。</p>
+
+<h3>5. 待审核流程</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `05_待审核/README.md`</p>
+<p class="bullet">- `05_待审核/记忆提案/示例提案.md`</p>
+<p class="bullet">- `05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md`</p>
+<p class="bullet">- `05_待审核/Skill提案/README.md`</p>
+<p class="bullet">- `05_待审核/资源变更提案/README.md`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- AI 或个人总结不能直接进入正式规则。</p>
+<p class="bullet">- 候选记忆、Skill、资源变更先进入待审核。</p>
+<p class="bullet">- 审核通过后再合并到正式目录。</p>
+
+<h3>6. 个人实验区</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `06_个人实验/README.md`</p>
+<p class="bullet">- `06_个人实验/陈纪言/README.md`</p>
+<p class="bullet">- `06_个人实验/肖明/README.md`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- 个人可以试错。</p>
+<p class="bullet">- AI 默认不读取个人实验。</p>
+<p class="bullet">- 好用内容需要整理为待审核提案。</p>
+
+<h3>7. 技能库入口</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `02_技能库/README.md`</p>
+
+<p>状态：</p>
+
+<p class="bullet">- 技能库正文未写，由肖明负责。</p>
+<p class="bullet">- 当前只保留入口和规范，不代写肖明负责内容。</p>
+
+<p>建议肖明最小补齐：</p>
+
+<p class="bullet">- `02_技能库/程序/程序总览.md`</p>
+<p class="bullet">- `02_技能库/程序/DoneGuard测试验收.md`</p>
+
+<h3>8. 工作流</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `03_工作流/新窗口接手流程.md`</p>
+<p class="bullet">- `03_工作流/会议沉淀流程.md`</p>
+<p class="bullet">- `03_工作流/测试Agent流程.md`</p>
+<p class="bullet">- `03_工作流/资源申请流程.md`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- 新窗口如何接手。</p>
+<p class="bullet">- 会议内容如何沉淀。</p>
+<p class="bullet">- 测试 Agent 如何和 DoneGuard 思路结合。</p>
+<p class="bullet">- 页面编号、端口等资源如何申请。</p>
+
+<h3>9. GitHub 协作配置</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `.github/workflows/check.yml`</p>
+<p class="bullet">- `.github/PULL_REQUEST_TEMPLATE/default.md`</p>
+<p class="bullet">- `.github/ISSUE_TEMPLATE/memory_proposal.md`</p>
+<p class="bullet">- `.github/ISSUE_TEMPLATE/resource_change.md`</p>
+<p class="bullet">- `.github/ISSUE_TEMPLATE/skill_proposal.md`</p>
+<p class="bullet">- `.github/CODEOWNERS`</p>
+
+<p>状态：</p>
+
+<p class="bullet">- 本地已配置好 GitHub Actions、PR 模板、Issue 模板、CODEOWNERS。</p>
+<p class="bullet">- 还没有推到 GitHub。</p>
+<p class="bullet">- CODEOWNERS 里的用户名还是占位，推到 GitHub 前需要替换成真实 GitHub 用户名。</p>
+
+<h3>10. 自动化脚本</h3>
+
+<p>已完成：</p>
+
+<p class="bullet">- `scripts/check_memory_repo.py`</p>
+<p class="bullet">- `scripts/new_proposal.py`</p>
+<p class="bullet">- `scripts/run_demo_check.py`</p>
+<p class="bullet">- `scripts/export_demo_packet.py`</p>
+
+<p>作用：</p>
+
+<p class="bullet">- `check_memory_repo.py`：检查 YAML 元信息、重复 ID、疑似敏感值、页面编号重复、项目必需接手文件。</p>
+<p class="bullet">- `new_proposal.py`：生成标准待审核提案。</p>
+<p class="bullet">- `run_demo_check.py`：演示前检查仓库是否准备好。</p>
+<p class="bullet">- `export_demo_packet.py`：导出 `dist/index.html` 和 `dist/演示包.md`。</p>
+
+<h2>当前实测情况</h2>
+
+<p>已完成一次独立新窗口接手测试。</p>
+
+<p>测试方式：</p>
+
+<p>新窗口只允许读取以下四个文件：</p>
+
+<pre><code>AI入口.md
+总览.md
+01_项目/AI工作台/StartPack.md
+01_项目/AI工作台/当前状态.md</code></pre>
+
+<p>测试结论：</p>
+
+<pre><code>通过</code></pre>
+
+<p>通过原因：</p>
+
+<p class="bullet">- 新窗口能说清 AI 工作台目标。</p>
+<p class="bullet">- 新窗口能说清第一阶段是 GitHub + Markdown。</p>
+<p class="bullet">- 新窗口能说清 MD 不是最终中心服务。</p>
+<p class="bullet">- 新窗口能说清陈纪言和肖明分工。</p>
+<p class="bullet">- 新窗口能识别哪些内容不能直接当正式规则。</p>
+<p class="bullet">- 新窗口能列出待确认问题和下一步建议。</p>
+
+<p>记录文件：</p>
+
+<pre><code>10_启动材料/新窗口接手实测记录.md</code></pre>
+
+<h2>当前未完成事项</h2>
+
+<h3>1. GitHub 远端还没创建</h3>
+
+<p>本地仓库已完成，但还没有 remote。</p>
+
+<p>原因：</p>
+
+<p class="bullet">- 本机没有 `gh` 命令。</p>
+<p class="bullet">- SSH 没有 GitHub 公钥权限。</p>
+<p class="bullet">- HTTPS 凭据未配置。</p>
+
+<p>下一步：</p>
+
+<p>刘大或团队先创建 GitHub 空仓库，然后执行：</p>
+
+<pre><code>cd /Users/sediment/Documents/ai-workbench-memory
+git remote add origin &lt;GitHub仓库地址&gt;
+git push -u origin main</code></pre>
+
+<h3>2. 肖明技能库正文未补</h3>
+
+<p>需要肖明补最小版本：</p>
+
+<pre><code>02_技能库/程序/程序总览.md
+02_技能库/程序/DoneGuard测试验收.md</code></pre>
+
+<h3>3. GitHub 权限和审核人未定</h3>
+
+<p>待确认：</p>
+
+<p class="bullet">- GitHub 仓库权限。</p>
+<p class="bullet">- main 分支保护规则。</p>
+<p class="bullet">- 资源登记变更审核人。</p>
+<p class="bullet">- Skill 变更审核人。</p>
+<p class="bullet">- CODEOWNERS 真实 GitHub 用户名。</p>
+
+<h3>4. 页面编号人工修改规则未最终确认</h3>
+
+<p>当前第一版是 MD 登记 + PR 审核。</p>
+
+<p>待确认：</p>
+
+<p class="bullet">- 是否允许直接人工改页面编号表。</p>
+<p class="bullet">- 是否必须走 PR。</p>
+<p class="bullet">- 谁有最终确认权。</p>
+
+<h3>5. DoneGuard 接入页面30测试 Agent 路径未最终确认</h3>
+
+<p>当前已有流程说明，但还未真正接入页面30。</p>
+
+<p>待确认：</p>
+
+<p class="bullet">- DoneGuard 是否作为页面30测试 Agent 的基础。</p>
+<p class="bullet">- 测试方案 AI 和测试执行 AI 如何分工。</p>
+<p class="bullet">- 是否需要专门窗口执行测试。</p>
+
+<h3>6. 数据库和中心服务后置</h3>
+
+<p>当前不做数据库。</p>
+
+<p>后续等刘大确定一台电脑作为服务器后，再做：</p>
+
+<p class="bullet">- `memory_service`</p>
+<p class="bullet">- SQLite</p>
+<p class="bullet">- Dashboard 审核面板</p>
+<p class="bullet">- 资源发号</p>
+<p class="bullet">- 窗口心跳</p>
+<p class="bullet">- StartPack 自动生成</p>
+
+<h2>当前演示口径</h2>
+
+<p>可以这样汇报：</p>
+
+<p>&gt; 这版已经完成第一阶段本地可演示版本。它不是普通共享文档，而是 AI 工作台协作记忆库。现在已经能演示 AI 入口、项目 StartPack、当前状态、待审核、资源登记、GitHub 协作、自检脚本和二期中心服务路线。新窗口接手也已经做过一次独立测试，结论是通过。数据库和服务器暂时不做，等刘大确定服务器电脑后再进入二期。</p>
+
+<h2>当前推荐下一步</h2>
+
+<p>1. 把本地仓库推到 GitHub。</p>
+<p>2. 让肖明补最小技能库正文。</p>
+<p>3. 跑一次 PR 审核流程。</p>
+<p>4. 明确页面编号人工修改规则。</p>
+<p>5. 明确 DoneGuard 接入页面30测试 Agent 的路径。</p>
+<p>6. 给刘大演示 `dist/index.html`。</p>
+</section>
+
+<section id="section-2">
   <div class="source">来源文件：<code>演示入口.md</code></div>
   <h1>演示入口</h1>
 
@@ -198,15 +517,16 @@ python3 scripts/run_demo_check.py</code></pre>
 <h3>方式三：逐个打开源文件</h3>
 
 <p>1. 打开 `README.md`，讲系统定位。</p>
-<p>2. 打开 `AI入口.md`，讲新 AI 窗口读取规则。</p>
-<p>3. 打开 `总览.md`，讲目录导航。</p>
-<p>4. 打开 `01_项目/AI工作台/StartPack.md`，讲接手包。</p>
-<p>5. 打开 `01_项目/AI工作台/当前状态.md`，讲当前事实。</p>
-<p>6. 打开 `01_项目/AI工作台/历史证据.md`，讲证据层不等于当前事实。</p>
-<p>7. 打开 `05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md`，讲待审核流程。</p>
-<p>8. 打开 `04_资源登记/页面角标编号.md`，讲页面编号和资源登记。</p>
-<p>9. 打开 `10_启动材料/功能对照表.md`，讲和刘大/王老师/肖明框架的对应关系。</p>
-<p>10. 打开 `10_启动材料/二期中心服务路线图.md`，讲后续升级方向。</p>
+<p>2. 打开 `10_启动材料/当前系统状态.md`，讲当前搭建情况。</p>
+<p>3. 打开 `AI入口.md`，讲新 AI 窗口读取规则。</p>
+<p>4. 打开 `总览.md`，讲目录导航。</p>
+<p>5. 打开 `01_项目/AI工作台/StartPack.md`，讲接手包。</p>
+<p>6. 打开 `01_项目/AI工作台/当前状态.md`，讲当前事实。</p>
+<p>7. 打开 `01_项目/AI工作台/历史证据.md`，讲证据层不等于当前事实。</p>
+<p>8. 打开 `05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md`，讲待审核流程。</p>
+<p>9. 打开 `04_资源登记/页面角标编号.md`，讲页面编号和资源登记。</p>
+<p>10. 打开 `10_启动材料/功能对照表.md`，讲和刘大/王老师/肖明框架的对应关系。</p>
+<p>11. 打开 `10_启动材料/二期中心服务路线图.md`，讲后续升级方向。</p>
 
 <h2>现场命令演示</h2>
 
@@ -231,7 +551,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>数据库和服务器当前不演示。后续刘大确定一台电脑作为服务器后，再按 `10_启动材料/二期中心服务路线图.md` 和 `04_资源登记/服务器候选.md` 推进。</p>
 </section>
 
-<section id="section-2">
+<section id="section-3">
   <div class="source">来源文件：<code>README.md</code></div>
   <h1>AI 工作台协作记忆库</h1>
 
@@ -260,6 +580,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p class="bullet">- `scripts/export_demo_packet.py`：导出 HTML 和 Markdown 演示包。</p>
 <p class="bullet">- `scripts/run_demo_check.py`：演示前准备检查。</p>
 <p class="bullet">- `10_启动材料/`：上线步骤、演示脚本、第一周推进清单和验收清单。</p>
+<p class="bullet">- `10_启动材料/当前系统状态.md`：当前搭建情况总览。</p>
 <p class="bullet">- `10_启动材料/功能对照表.md`：对照刘大、王老师、肖明原始框架。</p>
 <p class="bullet">- `10_启动材料/二期中心服务路线图.md`：说明后续如何升级到中心服务。</p>
 
@@ -304,7 +625,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p class="bullet">- 自检脚本会检查项目目录是否包含接手所需核心文件。</p>
 </section>
 
-<section id="section-3">
+<section id="section-4">
   <div class="source">来源文件：<code>AI入口.md</code></div>
   <h1>AI入口</h1>
 
@@ -369,7 +690,7 @@ python3 scripts/run_demo_check.py</code></pre>
 - ...</code></pre>
 </section>
 
-<section id="section-4">
+<section id="section-5">
   <div class="source">来源文件：<code>总览.md</code></div>
   <h1>总览</h1>
 
@@ -420,7 +741,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>服务器和数据库后置，候选登记见 `04_资源登记/服务器候选.md`。</p>
 </section>
 
-<section id="section-5">
+<section id="section-6">
   <div class="source">来源文件：<code>01_项目/AI工作台/StartPack.md</code></div>
   <h1>StartPack：AI工作台</h1>
 
@@ -471,7 +792,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>先完成 AI 工作台样板项目，再用一个新 Codex 窗口只读取 `AI入口.md`、`总览.md` 和本 Start Pack，测试是否能在 2 分钟内说清项目状态。</p>
 </section>
 
-<section id="section-6">
+<section id="section-7">
   <div class="source">来源文件：<code>01_项目/AI工作台/当前状态.md</code></div>
   <h1>当前状态：AI工作台</h1>
 
@@ -513,7 +834,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p class="bullet">- 如果个人实验长期不清理，会变成噪音。</p>
 </section>
 
-<section id="section-7">
+<section id="section-8">
   <div class="source">来源文件：<code>01_项目/AI工作台/历史证据.md</code></div>
   <h1>历史证据：AI工作台</h1>
 
@@ -532,7 +853,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>需要从历史证据提炼规则时，必须先写入 `05_待审核/记忆提案/`，审核后才能进入正式文档。</p>
 </section>
 
-<section id="section-8">
+<section id="section-9">
   <div class="source">来源文件：<code>05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</code></div>
   <h1>新窗口必须先读StartPack</h1>
 
@@ -609,7 +930,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>待审核</p>
 </section>
 
-<section id="section-9">
+<section id="section-10">
   <div class="source">来源文件：<code>04_资源登记/页面角标编号.md</code></div>
   <h1>页面角标编号</h1>
 
@@ -660,7 +981,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <pre class="table-line">| 28 | AI工作台 | 待补充 | 待补充 | current |</pre>
 </section>
 
-<section id="section-10">
+<section id="section-11">
   <div class="source">来源文件：<code>04_资源登记/服务器候选.md</code></div>
   <h1>服务器候选</h1>
 
@@ -694,7 +1015,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>4. 将页面编号、端口、待审核记忆逐步迁移到中心服务。</p>
 </section>
 
-<section id="section-11">
+<section id="section-12">
   <div class="source">来源文件：<code>10_启动材料/功能对照表.md</code></div>
   <h1>功能对照表</h1>
 
@@ -760,7 +1081,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>当前版本与之前讨论框架一致，但只做到第一阶段：共享、接手、待审核、资源登记、Git 协作和自检。完整中心服务、Dashboard、自动发号、窗口状态和检索增强属于第二阶段。</p>
 </section>
 
-<section id="section-12">
+<section id="section-13">
   <div class="source">来源文件：<code>10_启动材料/二期中心服务路线图.md</code></div>
   <h1>二期中心服务路线图</h1>
 
@@ -885,7 +1206,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>6. 刘大确认服务器电脑。</p>
 </section>
 
-<section id="section-13">
+<section id="section-14">
   <div class="source">来源文件：<code>10_启动材料/逐分钟演示讲稿.md</code></div>
   <h1>逐分钟演示讲稿</h1>
 
@@ -1000,7 +1321,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>第一版先把协作流程跑通，二期再做资源发号、窗口心跳、StartPack 自动生成、Dashboard 审核面板。</p>
 </section>
 
-<section id="section-14">
+<section id="section-15">
   <div class="source">来源文件：<code>10_启动材料/现场答辩问答.md</code></div>
   <h1>现场答辩问答</h1>
 
@@ -1055,7 +1376,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>数据库和服务器属于二期，不算当前第一阶段缺口。</p>
 </section>
 
-<section id="section-15">
+<section id="section-16">
   <div class="source">来源文件：<code>10_启动材料/新窗口演示提示词.md</code></div>
   <h1>新窗口演示提示词</h1>
 
