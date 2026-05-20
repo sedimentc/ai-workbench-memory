@@ -458,7 +458,11 @@
     }
     function renderHandoff() {
       const data = state.startPack;
-      if (!data) return;
+      if (!data) {
+        $("#handoff-count").textContent = "0";
+        $("#handoff-col").innerHTML = "<div class='empty'>点击上方“生成新窗口接手包”后显示。</div>";
+        return;
+      }
       $("#handoff-count").textContent = data.filesRead.length;
       $("#handoff-col").innerHTML = [
         item("读取文件", "接手顺序", data.filesRead.join("\n")),
@@ -531,7 +535,7 @@
       $("#doc-body").textContent = data.body;
     }
     async function loadAll() {
-      const [status, structure, git, resources, imported, proposals, candidates, startPack] = await Promise.all([
+      const [status, structure, git, resources, imported, proposals, candidates] = await Promise.all([
         api("/api/status"),
         api("/api/structure"),
         api("/api/git"),
@@ -539,11 +543,16 @@
         api("/api/imported"),
         api("/api/proposals"),
         api("/api/import-candidates"),
-        api("/api/start-pack"),
       ]);
-      Object.assign(state, { status, structure, git, resources, imported, proposals, candidates, startPack });
+      Object.assign(state, { status, structure, git, resources, imported, proposals, candidates, startPack: null });
       renderSummary(); renderHandoff(); renderIndex(); renderImported(); renderGit(); renderResources(); renderProposals(); renderCandidates();
       if (!$("#doc-body").textContent) openDoc("README.md");
+    }
+    async function generateHandoff() {
+      state.startPack = await api("/api/start-pack");
+      renderHandoff();
+      $("#top-notice").textContent = `接手包已生成 · 读取 ${state.startPack.filesRead.length} 个核心文件 · 显示在“新窗口接手”列`;
+      document.querySelector("#handoff-col").scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
     }
     async function resolveQuery(value) {
       state.index = await api(`/api/resolve?q=${encodeURIComponent(value)}`);
@@ -594,7 +603,7 @@
       if (button.dataset.doc) openDoc(button.dataset.doc);
       if (button.dataset.query) { $("#query").value = button.dataset.query; resolveQuery(button.dataset.query); }
       if (button.id === "refresh-all") loadAll();
-      if (button.id === "run-handoff") { renderHandoff(); openDoc("01_项目/AI工作台/StartPack.md"); }
+      if (button.id === "run-handoff") generateHandoff();
       if (button.id === "resolve-query") resolveQuery($("#query").value || "页面22");
       if (button.id === "refresh-candidates") { state.candidates = await api("/api/import-candidates"); renderCandidates(); }
       if (button.id === "import-selected") importSelected();
