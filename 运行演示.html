@@ -252,9 +252,11 @@
     .tag.ok { background: #dcfce7; color: #166534; }
     .tag.blue { background: var(--blue-soft); color: #1d4ed8; }
     .workbench {
+      --sidebar-width: 248px;
+      --content-width: 540px;
       display: grid;
-      grid-template-columns: 248px minmax(0, 1fr);
-      gap: 10px;
+      grid-template-columns: var(--sidebar-width) 8px var(--content-width) 8px minmax(320px, 1fr);
+      gap: 0;
     }
     .module-sidebar {
       background: #fff;
@@ -268,15 +270,31 @@
       max-height: calc(100vh - 170px);
       overflow: auto;
     }
+    .resizer {
+      align-self: stretch;
+      cursor: col-resize;
+      position: relative;
+      min-height: 360px;
+    }
+    .resizer::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 3px;
+      width: 2px;
+      background: var(--line);
+      border-radius: 999px;
+    }
+    .resizer:hover::before,
+    .resizer.dragging::before {
+      background: var(--green);
+      width: 3px;
+      left: 2px;
+    }
     .sidebar-title {
       font-weight: 850;
       margin: 2px 2px 10px;
-    }
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(360px, .62fr) minmax(460px, 1fr);
-      gap: 10px;
-      align-items: start;
     }
     .workspace-panel { min-width: 0; }
     .col {
@@ -311,6 +329,22 @@
       margin-bottom: 8px;
       background: #fff;
     }
+    .item.clickable {
+      cursor: pointer;
+    }
+    .item.clickable:hover {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+    .item.compact {
+      min-height: 38px;
+      display: grid;
+      grid-template-columns: minmax(120px, .62fr) minmax(70px, .22fr) minmax(120px, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 7px 9px;
+      margin-bottom: 6px;
+    }
     .item.soft { background: #fbfcfe; }
     .item-title {
       font-weight: 750;
@@ -321,6 +355,18 @@
     }
     .item-meta { color: var(--muted); font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; }
     .item-body { margin-top: 8px; white-space: pre-wrap; font-size: 13px; }
+    .item.compact .item-title,
+    .item.compact .item-meta,
+    .item.compact .item-body {
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .item.compact .item-title {
+      display: block;
+    }
     .split2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .query-row { display: grid; grid-template-columns: 1fr 72px; gap: 7px; margin-bottom: 8px; }
     .section-label {
@@ -359,13 +405,13 @@
       .titlebar, .wide-action, .control-row, .doc-panel { grid-template-columns: 1fr; }
       .toolbar { grid-template-columns: 1fr 1fr; }
       .summary { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
-      .workspace { grid-template-columns: 1fr; }
       .module-sidebar { position: static; max-height: none; }
       .col { max-height: none; }
       .doc-panel { min-height: 360px; }
     }
     @media (max-width: 760px) {
       .workbench { grid-template-columns: 1fr; }
+      .resizer { display: none; }
     }
   </style>
 </head>
@@ -414,17 +460,17 @@
   <main class="main">
     <section class="summary" id="summary"></section>
 
-    <section class="workbench">
+    <section class="workbench" id="workbench">
       <aside class="module-sidebar">
         <div class="sidebar-title">快捷入口</div>
         <div class="module-map" id="module-map"></div>
       </aside>
-      <section class="workspace">
-        <section class="workspace-panel" id="module-columns"></section>
-        <section class="doc-panel">
-          <div class="doc-meta" id="doc-meta">未选择文档</div>
-          <div class="doc-body" id="doc-body"></div>
-        </section>
+      <div class="resizer" data-resizer="left" title="拖动调整快捷入口宽度"></div>
+      <section class="workspace-panel" id="module-columns"></section>
+      <div class="resizer" data-resizer="right" title="拖动调整工作区宽度"></div>
+      <section class="doc-panel">
+        <div class="doc-meta" id="doc-meta">未选择文档</div>
+        <div class="doc-body" id="doc-body"></div>
       </section>
     </section>
   </main>
@@ -433,14 +479,67 @@
     const state = { status: null, structure: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目" };
     const $ = (selector) => document.querySelector(selector);
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch]));
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max));
     async function api(url, options) {
       const res = await fetch(url, options);
       if (!res.ok) throw new Error(await res.text());
       return res.json();
     }
-    function item(title, meta, body = "", path = "") {
-      const action = path ? `<button data-doc="${escapeHtml(path)}">打开</button>` : "";
-      return `<div class="item"><div class="item-title"><span>${escapeHtml(title)}</span>${action}</div><div class="item-meta">${escapeHtml(meta)}</div>${body ? `<div class="item-body">${escapeHtml(body)}</div>` : ""}</div>`;
+    function item(title, meta, body = "", path = "", options = {}) {
+      const compact = options.compact || Boolean(path);
+      const classes = ["item", compact ? "compact" : "", path ? "clickable" : "", options.soft ? "soft" : ""].filter(Boolean).join(" ");
+      const attrs = path ? ` data-doc="${escapeHtml(path)}" role="button" tabindex="0"` : "";
+      return `<div class="${classes}"${attrs}><div class="item-title"><span>${escapeHtml(title)}</span></div><div class="item-meta">${escapeHtml(meta)}</div>${body ? `<div class="item-body">${escapeHtml(body)}</div>` : ""}</div>`;
+    }
+    function setPaneWidth(name, value) {
+      const workbench = $("#workbench");
+      if (!workbench) return;
+      workbench.style.setProperty(name, `${Math.round(value)}px`);
+      localStorage.setItem(`memory-panel-${name}`, String(Math.round(value)));
+    }
+    function restorePaneWidths() {
+      const workbench = $("#workbench");
+      if (!workbench) return;
+      ["--sidebar-width", "--content-width"].forEach((name) => {
+        const saved = Number(localStorage.getItem(`memory-panel-${name}`));
+        if (saved > 0) workbench.style.setProperty(name, `${saved}px`);
+      });
+    }
+    function paneWidth(name, fallback) {
+      const raw = getComputedStyle($("#workbench")).getPropertyValue(name);
+      return Number.parseFloat(raw) || fallback;
+    }
+    function initResizers() {
+      restorePaneWidths();
+      document.querySelectorAll(".resizer").forEach((resizer) => {
+        resizer.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          resizer.classList.add("dragging");
+          document.body.style.cursor = "col-resize";
+          document.body.style.userSelect = "none";
+          const type = resizer.dataset.resizer;
+          const move = (moveEvent) => {
+            const workbench = $("#workbench");
+            const rect = workbench.getBoundingClientRect();
+            const sidebar = paneWidth("--sidebar-width", 248);
+            const content = paneWidth("--content-width", 540);
+            if (type === "left") {
+              setPaneWidth("--sidebar-width", clamp(moveEvent.clientX - rect.left, 170, rect.width - content - 380));
+            } else {
+              setPaneWidth("--content-width", clamp(moveEvent.clientX - rect.left - sidebar - 8, 280, rect.width - sidebar - 360));
+            }
+          };
+          const up = () => {
+            resizer.classList.remove("dragging");
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+            window.removeEventListener("pointermove", move);
+            window.removeEventListener("pointerup", up);
+          };
+          window.addEventListener("pointermove", move);
+          window.addEventListener("pointerup", up, { once: true });
+        });
+      });
     }
     const moduleView = {
       "00_规则": { count: "rules-count", title: "00_规则", sub: "AI读取 / 敏感信息 / Git协作 / 审核 / 阶段边界" },
@@ -603,11 +702,12 @@
       if (count) count.textContent = git.branches.length;
       const mainBranch = git.branches.find((row) => row.name === "main") || git.branches.find((row) => row.name.endsWith("/main"));
       const currentBranch = git.branches.find((row) => row.active) || git.branches.find((row) => row.name === git.current);
-      const mainline = mainBranch ? item("主线 main", mainBranch.commit.slice(0, 12), mainBranch.message) : item("主线 main", "未找到");
-      const branchLine = currentBranch ? item(`当前支线 ${git.current}`, currentBranch.commit.slice(0, 12), currentBranch.message) : item(`当前支线 ${git.current}`, "当前分支");
-      const status = git.status.length ? git.status.map((line) => item(line, "working tree")).join("") : item("工作区干净", "status", "", "");
-      const branches = git.branches.map((row) => item(row.active ? `* ${row.name}` : row.name, row.commit.slice(0, 12), row.message)).join("");
-      const commits = git.commits.map((row) => item(row.commit, "commit", row.message)).join("");
+      const compact = { compact: true };
+      const mainline = mainBranch ? item("主线 main", mainBranch.commit.slice(0, 12), mainBranch.message, "", compact) : item("主线 main", "未找到", "", "", compact);
+      const branchLine = currentBranch ? item(`当前支线 ${git.current}`, currentBranch.commit.slice(0, 12), currentBranch.message, "", compact) : item(`当前支线 ${git.current}`, "当前分支", "", "", compact);
+      const status = git.status.length ? git.status.map((line) => item(line, "working tree", "", "", compact)).join("") : item("工作区干净", "status", "", "", compact);
+      const branches = git.branches.map((row) => item(row.active ? `* ${row.name}` : row.name, row.commit.slice(0, 12), row.message, "", compact)).join("");
+      const commits = git.commits.map((row) => item(row.commit, "commit", row.message, "", compact)).join("");
       col.innerHTML = `<div class="item soft"><div class="item-title"><span>Git 主线 / 支线</span><span class="tag ok">${escapeHtml(git.current)}</span></div><div class="item-meta">${escapeHtml(git.remote || "无远端")}</div></div>${mainline}${branchLine}${status}${branches}${commits}`;
       $("#branch-select").innerHTML = git.branches.map((row) => `<option ${row.active ? "selected" : ""}>${escapeHtml(row.name)}</option>`).join("");
     }
@@ -719,6 +819,11 @@
       renderSummary();
     }
     document.addEventListener("click", async (event) => {
+      const docTarget = event.target.closest("[data-doc]");
+      if (docTarget) {
+        openDoc(docTarget.dataset.doc);
+        return;
+      }
       const button = event.target.closest("button");
       if (!button) return;
       if (button.dataset.module) {
@@ -726,7 +831,6 @@
         renderNumberedColumns(); renderActiveModuleData();
         return;
       }
-      if (button.dataset.doc) openDoc(button.dataset.doc);
       if (button.dataset.query) { $("#query").value = button.dataset.query; resolveQuery(button.dataset.query); }
       if (button.id === "refresh-all") loadAll();
       if (button.id === "run-handoff") generateHandoff();
@@ -744,6 +848,14 @@
       if (event.target?.id !== "candidate-select") return;
       $("#restricted-import").checked = $("#candidate-select").selectedOptions[0]?.dataset.restricted === "1";
     });
+    document.addEventListener("keydown", (event) => {
+      if (!["Enter", " "].includes(event.key)) return;
+      const docTarget = event.target.closest("[data-doc]");
+      if (!docTarget) return;
+      event.preventDefault();
+      openDoc(docTarget.dataset.doc);
+    });
+    initResizers();
     loadAll().catch((error) => {
       $("#top-meta").textContent = "读取失败";
       $("#doc-body").textContent = String(error);
