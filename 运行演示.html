@@ -435,6 +435,17 @@
     .hierarchy-row button {
       min-height: 34px;
     }
+    .project-filter {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) 78px;
+      gap: 7px;
+      align-items: center;
+      margin: 2px 0 9px;
+    }
+    .project-filter input,
+    .project-filter button {
+      min-height: 34px;
+    }
     .action-line {
       margin-top: 8px;
       color: var(--muted);
@@ -481,7 +492,8 @@
       .hierarchy-fields.two,
       .project-title-row,
       .project-heading,
-      .project-docs {
+      .project-docs,
+      .project-filter {
         grid-template-columns: 1fr;
       }
     }
@@ -539,7 +551,7 @@
   </main>
 
   <script>
-    const state = { status: null, structure: null, projects: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目" };
+    const state = { status: null, structure: null, projects: null, git: null, resources: null, imported: null, proposals: null, candidates: null, startPack: null, index: null, activeModule: "01_项目", projectSearch: "" };
     const $ = (selector) => document.querySelector(selector);
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch]));
     const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max));
@@ -649,7 +661,13 @@
             </div>
             <div class="action-line" id="project-action-line">部门可删除；项目删除会移入 99_归档/旧项目记录。</div>
           </div>
-          <div class="section-label">部门项目导航</div><div id="project-col"></div><div class="section-label">新窗口接手包</div><div id="handoff-col"></div>${files}`;
+          <div class="section-label">部门项目导航</div>
+          <div class="project-filter">
+            <button id="show-all-projects">显示全部</button>
+            <input id="project-search" placeholder="搜索部门、项目、负责人、Git仓库、MD文件">
+            <button id="run-project-search" class="primary">搜索</button>
+          </div>
+          <div id="project-col"></div><div class="section-label">新窗口接手包</div><div id="handoff-col"></div>${files}`;
       }
       if (mod.module === "03_工作流") {
         const flow = (state.structure?.workflow || []).map((step, index) => `${index + 1}. ${step}`).join("\n");
@@ -753,15 +771,35 @@
     function findProject(localPath) {
       return allProjects().find(({ project }) => project.localPath === localPath);
     }
+    function projectSearchText(dept, project = null) {
+      const projectText = project ? [
+        project.name, project.status, project.repo, project.localPath, project.owner, project.note,
+        ...(project.mdFiles || []).flatMap((file) => [file.title, file.path, file.modifier, file.updatedAt]),
+      ] : [];
+      return [dept.name, dept.owner, dept.status, dept.summary, dept.overview, ...projectText].join(" ").toLowerCase();
+    }
+    function visibleDepartments() {
+      const source = state.projects?.departments || [];
+      const keyword = (state.projectSearch || "").trim().toLowerCase();
+      if (!keyword) return source;
+      return source.map((dept) => {
+        const deptMatched = projectSearchText(dept).includes(keyword);
+        const projects = deptMatched ? (dept.projects || []) : (dept.projects || []).filter((project) => projectSearchText(dept, project).includes(keyword));
+        return deptMatched || projects.length ? { ...dept, projects } : null;
+      }).filter(Boolean);
+    }
     function renderProjects() {
       const col = $("#project-col");
       const count = $("#project-count");
       if (!col) return;
-      const departments = state.projects?.departments || [];
+      const departments = visibleDepartments();
       const projectCount = state.projects?.projectCount || 0;
-      if (count) count.textContent = `${departments.length}/${projectCount}`;
+      const visibleProjectCount = departments.reduce((sum, dept) => sum + (dept.projects?.length || 0), 0);
+      const searchInput = $("#project-search");
+      if (searchInput) searchInput.value = state.projectSearch || "";
+      if (count) count.textContent = `${departments.length}组/${visibleProjectCount}项`;
       if (!departments.length) {
-        col.innerHTML = "<div class='empty'>暂无部门项目数据</div>";
+        col.innerHTML = state.projectSearch ? "<div class='empty'>没有命中的部门或项目，点“显示全部”恢复。</div>" : "<div class='empty'>暂无部门项目数据</div>";
         renderProjectControls();
         return;
       }
@@ -1109,6 +1147,8 @@
       if (button.id === "refresh-all") loadAll();
       if (button.id === "run-handoff") generateHandoff();
       if (button.id === "resolve-query") resolveQuery($("#query").value);
+      if (button.id === "run-project-search") { state.projectSearch = $("#project-search").value; renderProjects(); }
+      if (button.id === "show-all-projects") { state.projectSearch = ""; renderProjects(); }
       if (button.id === "refresh-candidates") { state.candidates = await api("/api/import-candidates"); renderCandidates(); }
       if (button.id === "import-selected") importSelected();
       if (button.id === "add-department") addDepartment().catch((error) => { const line = $("#project-action-line"); if (line) line.textContent = String(error.message || error); });
@@ -1126,6 +1166,12 @@
       $("#restricted-import").checked = $("#candidate-select").selectedOptions[0]?.dataset.restricted === "1";
     });
     document.addEventListener("keydown", (event) => {
+      if (event.target?.id === "project-search" && event.key === "Enter") {
+        event.preventDefault();
+        state.projectSearch = $("#project-search").value;
+        renderProjects();
+        return;
+      }
       if (!["Enter", " "].includes(event.key)) return;
       const docTarget = event.target.closest("[data-doc]");
       if (!docTarget) return;

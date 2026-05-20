@@ -135,7 +135,7 @@
 <body>
   <header>
     <h1>AI 工作台共享 MD 系统演示包</h1>
-    <p>生成时间：2026-05-20T12:43:08+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
+    <p>生成时间：2026-05-20T12:58:11+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
   </header>
   <main>
     <nav><a href="#section-1">1. 10_启动材料/当前系统状态.md</a>
@@ -150,7 +150,7 @@
 <a href="#section-10">10. 07_实战索引/连接信息索引.md</a>
 <a href="#section-11">11. 08_导入资料/README.md</a>
 <a href="#section-12">12. 01_项目/部门总览.md</a>
-<a href="#section-13">13. 01_项目/AI工作台部门/部门总览.md</a>
+<a href="#section-13">13. 01_项目/ai组/部门总览.md</a>
 <a href="#section-14">14. 01_项目/AI工作台/StartPack.md</a>
 <a href="#section-15">15. 01_项目/AI工作台/当前状态.md</a>
 <a href="#section-16">16. 01_项目/AI工作台/历史证据.md</a>
@@ -838,7 +838,7 @@ python3 scripts/run_demo_check.py</code></pre>
 
 <h2>第一版样板项目</h2>
 
-<p>当前先以 `01_项目/AI工作台部门/` 作为部门样板，以 `01_项目/AI工作台/` 作为项目样板，验证新 AI 窗口是否能通过部门导航、`AI入口.md` 和 `StartPack.md` 快速接手。</p>
+<p>当前固定部门为英语组、游戏组、硬件组、量化组、ai组；先以 `01_项目/ai组/` 作为部门样板，以 `01_项目/AI工作台/` 作为项目样板，验证新 AI 窗口是否能通过部门导航、`AI入口.md` 和 `StartPack.md` 快速接手。</p>
 
 <h2>常用脚本</h2>
 
@@ -1043,10 +1043,15 @@ python3 scripts/run_demo_check.py</code></pre>
 
 <pre class="table-line">| 部门 | 部门文档 | 项目数 | 负责人 | 状态 | 说明 |</pre>
 <pre class="table-line">| --- | --- | --- | --- | --- | --- |</pre>
-<pre class="table-line">| AI工作台部门 | `01_项目/AI工作台部门/部门总览.md` | 1 | 陈纪言 | current | 负责 AI 工作台、共享 MD、演示面板和接手流程样板 |</pre>
+<pre class="table-line">| 英语组 | `01_项目/英语组/部门总览.md` | 0 | 待确认 | current | 英语业务、内容、运营相关项目入口 |</pre>
+<pre class="table-line">| 游戏组 | `01_项目/游戏组/部门总览.md` | 0 | 待确认 | current | 游戏研发、策划、美术、发行相关项目入口 |</pre>
+<pre class="table-line">| 硬件组 | `01_项目/硬件组/部门总览.md` | 0 | 待确认 | current | 设备、电脑、局域网、外设和硬件环境项目入口 |</pre>
+<pre class="table-line">| 量化组 | `01_项目/量化组/部门总览.md` | 0 | 待确认 | current | 金融、基本面、量化、交易和数据分析项目入口 |</pre>
+<pre class="table-line">| ai组 | `01_项目/ai组/部门总览.md` | 1 | 陈纪言 | current | AI 工作台、共享 MD、Agent、测试验收和自动化项目入口 |</pre>
 
 <h2>使用规则</h2>
 
+<p class="bullet">- 当前固定部门为：英语组、游戏组、硬件组、量化组、ai组。</p>
 <p class="bullet">- 新增部门时，可以在演示面板 `01_项目` 模块新增，也可以手动新增部门文档后把部门写入本表。</p>
 <p class="bullet">- 删除部门时，只允许删除没有项目的空部门；有项目的部门必须先迁移或归档项目。</p>
 <p class="bullet">- 部门文档只做项目导航，不替代项目自己的 `StartPack.md` 和 `当前状态.md`。</p>
@@ -1056,12 +1061,12 @@ python3 scripts/run_demo_check.py</code></pre>
 </section>
 
 <section id="section-13">
-  <div class="source">来源文件：<code>01_项目/AI工作台部门/部门总览.md</code></div>
-  <h1>AI工作台部门</h1>
+  <div class="source">来源文件：<code>01_项目/ai组/部门总览.md</code></div>
+  <h1>ai组</h1>
 
 <h2>部门定位</h2>
 
-<p>本部门负责把刘大的多电脑、多 AI 窗口协作流程沉淀成可以接手、可以审核、可以用 Git 协作的共享 MD 系统。</p>
+<p>负责 AI 工作台、共享 MD、Agent、测试验收、自动化和多 AI 协作相关项目。</p>
 
 <h2>负责项目</h2>
 
@@ -1071,7 +1076,7 @@ python3 scripts/run_demo_check.py</code></pre>
 
 <h2>AI读取方式</h2>
 
-<p>1. 先读 `01_项目/部门总览.md`，确认项目属于哪个部门。</p>
+<p>1. 先读 `01_项目/部门总览.md`，确认项目属于 ai组。</p>
 <p>2. 再读本部门 `部门总览.md`，确认项目仓库、本地路径和负责人。</p>
 <p>3. 进入目标项目后，按 `StartPack.md`、`当前状态.md`、`接手说明.md` 接手。</p>
 <p>4. 涉及页面编号、端口、电脑环境时，再读 `04_资源登记/`。</p>
