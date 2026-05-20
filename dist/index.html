@@ -135,7 +135,7 @@
 <body>
   <header>
     <h1>AI 工作台共享 MD 系统演示包</h1>
-    <p>生成时间：2026-05-20T11:04:56+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
+    <p>生成时间：2026-05-20T11:16:34+08:00。打开本页即可按顺序演示，不需要切换多个 Markdown 文件。</p>
   </header>
   <main>
     <nav><a href="#section-1">1. 10_启动材料/当前系统状态.md</a>
@@ -148,17 +148,18 @@
 <a href="#section-8">8. 07_实战索引/页面索引.md</a>
 <a href="#section-9">9. 07_实战索引/技能索引.md</a>
 <a href="#section-10">10. 07_实战索引/连接信息索引.md</a>
-<a href="#section-11">11. 01_项目/AI工作台/StartPack.md</a>
-<a href="#section-12">12. 01_项目/AI工作台/当前状态.md</a>
-<a href="#section-13">13. 01_项目/AI工作台/历史证据.md</a>
-<a href="#section-14">14. 05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</a>
-<a href="#section-15">15. 04_资源登记/页面角标编号.md</a>
-<a href="#section-16">16. 04_资源登记/服务器候选.md</a>
-<a href="#section-17">17. 10_启动材料/功能对照表.md</a>
-<a href="#section-18">18. 10_启动材料/二期中心服务路线图.md</a>
-<a href="#section-19">19. 10_启动材料/逐分钟演示讲稿.md</a>
-<a href="#section-20">20. 10_启动材料/现场答辩问答.md</a>
-<a href="#section-21">21. 10_启动材料/新窗口演示提示词.md</a></nav>
+<a href="#section-11">11. 08_导入资料/README.md</a>
+<a href="#section-12">12. 01_项目/AI工作台/StartPack.md</a>
+<a href="#section-13">13. 01_项目/AI工作台/当前状态.md</a>
+<a href="#section-14">14. 01_项目/AI工作台/历史证据.md</a>
+<a href="#section-15">15. 05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</a>
+<a href="#section-16">16. 04_资源登记/页面角标编号.md</a>
+<a href="#section-17">17. 04_资源登记/服务器候选.md</a>
+<a href="#section-18">18. 10_启动材料/功能对照表.md</a>
+<a href="#section-19">19. 10_启动材料/二期中心服务路线图.md</a>
+<a href="#section-20">20. 10_启动材料/逐分钟演示讲稿.md</a>
+<a href="#section-21">21. 10_启动材料/现场答辩问答.md</a>
+<a href="#section-22">22. 10_启动材料/新窗口演示提示词.md</a></nav>
     <div>
 <section id="section-1">
   <div class="source">来源文件：<code>10_启动材料/当前系统状态.md</code></div>
@@ -272,12 +273,14 @@ CHECK_PASS</code></pre>
 <p class="bullet">- `07_实战索引/字段契约索引.md`</p>
 <p class="bullet">- `07_实战索引/连接信息索引.md`</p>
 <p class="bullet">- `07_实战索引/最近改动索引.md`</p>
+<p class="bullet">- `08_导入资料/README.md`</p>
 
 <p>作用：</p>
 
 <p class="bullet">- 吸收刘大版本最实战的检索能力。</p>
 <p class="bullet">- 用户说“页面22”“技能1”“查字段”“第四级窗口”时，AI 能先映射成标准对象。</p>
 <p class="bullet">- 连接信息索引允许核心成员按受限规则记录必要账号、密码、token 等协作凭据。</p>
+<p class="bullet">- 本机项目 MD/TXT 可以导入到 `08_导入资料/`，受限资料默认脱敏展示。</p>
 <p class="bullet">- 仍保留 Git、审核、自检和演示闭环。</p>
 
 <h3>5. 资源登记</h3>
@@ -572,6 +575,8 @@ python3 scripts/run_demo_check.py</code></pre>
 
 <p class="bullet">- 新窗口接手。</p>
 <p class="bullet">- 页面22索引解析。</p>
+<p class="bullet">- 本机 MD/TXT 导入。</p>
+<p class="bullet">- Git 分支查看。</p>
 <p class="bullet">- 待审核提案生成。</p>
 <p class="bullet">- 核心成员凭据规则。</p>
 <p class="bullet">- 系统自检。</p>
@@ -656,12 +661,13 @@ python3 scripts/run_demo_check.py</code></pre>
 <p class="bullet">- `01_项目/AI工作台/StartPack.md`：AI 工作台项目接手包。</p>
 <p class="bullet">- `05_待审核/`：所有候选记忆、规则、资源变更先进入这里。</p>
 <p class="bullet">- `07_实战索引/`：刘大式快速检索层，负责把口语说法映射到页面、技能、项目、窗口和字段。</p>
+<p class="bullet">- `08_导入资料/`：本机项目 MD/TXT 导入区，受限资料默认脱敏展示。</p>
 <p class="bullet">- `scripts/check_memory_repo.py`：基础自检脚本。</p>
 <p class="bullet">- `scripts/new_proposal.py`：生成标准待审核提案。</p>
 <p class="bullet">- `scripts/export_demo_packet.py`：导出 HTML 和 Markdown 演示包。</p>
 <p class="bullet">- `scripts/run_demo_check.py`：演示前准备检查。</p>
 <p class="bullet">- `scripts/demo_server.py`：启动可点击的本地运行演示。</p>
-<p class="bullet">- `运行演示.html`：系统框架和实际工作流的交互演示页。</p>
+<p class="bullet">- `运行演示.html`：团队工作台面板，包含实战索引、导入资料、Git 分支、资源登记、待审核和自检。</p>
 <p class="bullet">- `10_启动材料/`：上线步骤、演示脚本、第一周推进清单和验收清单。</p>
 <p class="bullet">- `10_启动材料/当前系统状态.md`：当前搭建情况总览。</p>
 <p class="bullet">- `10_启动材料/功能对照表.md`：对照刘大、王老师、肖明原始框架。</p>
@@ -1012,6 +1018,20 @@ python3 scripts/run_demo_check.py</code></pre>
 </section>
 
 <section id="section-11">
+  <div class="source">来源文件：<code>08_导入资料/README.md</code></div>
+  <h1>导入资料</h1>
+
+<p>本目录保存从本机导入的项目 MD/TXT 资料。</p>
+
+<pre class="table-line">| 子目录 | 用途 |</pre>
+<pre class="table-line">| --- | --- |</pre>
+<pre class="table-line">| `项目资料/` | 普通项目说明、交接文档、README |</pre>
+<pre class="table-line">| `受限资料/` | 可能包含账号、密码、token、服务器信息的核心成员资料 |</pre>
+
+<p>导入资料默认不直接成为正式规则，需要整理成 `05_待审核/` 提案后再合并。</p>
+</section>
+
+<section id="section-12">
   <div class="source">来源文件：<code>01_项目/AI工作台/StartPack.md</code></div>
   <h1>StartPack：AI工作台</h1>
 
@@ -1064,7 +1084,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>先完成 AI 工作台样板项目，再用一个新 Codex 窗口只读取 `AI入口.md`、`总览.md` 和本 Start Pack，测试是否能在 2 分钟内说清项目状态。</p>
 </section>
 
-<section id="section-12">
+<section id="section-13">
   <div class="source">来源文件：<code>01_项目/AI工作台/当前状态.md</code></div>
   <h1>当前状态：AI工作台</h1>
 
@@ -1106,7 +1126,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p class="bullet">- 如果个人实验长期不清理，会变成噪音。</p>
 </section>
 
-<section id="section-13">
+<section id="section-14">
   <div class="source">来源文件：<code>01_项目/AI工作台/历史证据.md</code></div>
   <h1>历史证据：AI工作台</h1>
 
@@ -1125,7 +1145,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>需要从历史证据提炼规则时，必须先写入 `05_待审核/记忆提案/`，审核后才能进入正式文档。</p>
 </section>
 
-<section id="section-14">
+<section id="section-15">
   <div class="source">来源文件：<code>05_待审核/记忆提案/20260519-新窗口必须先读StartPack.md</code></div>
   <h1>新窗口必须先读StartPack</h1>
 
@@ -1202,7 +1222,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>待审核</p>
 </section>
 
-<section id="section-15">
+<section id="section-16">
   <div class="source">来源文件：<code>04_资源登记/页面角标编号.md</code></div>
   <h1>页面角标编号</h1>
 
@@ -1258,7 +1278,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <pre class="table-line">| 33 | AI工作台 | 高频队列排查 | `/dashboard/ai-workbench-high-poll-queue.html` | current |</pre>
 </section>
 
-<section id="section-16">
+<section id="section-17">
   <div class="source">来源文件：<code>04_资源登记/服务器候选.md</code></div>
   <h1>服务器候选</h1>
 
@@ -1292,7 +1312,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>4. 将页面编号、端口、待审核记忆逐步迁移到中心服务。</p>
 </section>
 
-<section id="section-17">
+<section id="section-18">
   <div class="source">来源文件：<code>10_启动材料/功能对照表.md</code></div>
   <h1>功能对照表</h1>
 
@@ -1362,7 +1382,7 @@ python3 scripts/run_demo_check.py</code></pre>
 <p>当前版本与之前讨论框架一致，但只做到第一阶段：共享、接手、待审核、实战索引、资源登记、Git 协作和自检。完整中心服务、Dashboard、自动发号、窗口状态自动生成和语义检索增强属于第二阶段。</p>
 </section>
 
-<section id="section-18">
+<section id="section-19">
   <div class="source">来源文件：<code>10_启动材料/二期中心服务路线图.md</code></div>
   <h1>二期中心服务路线图</h1>
 
@@ -1487,7 +1507,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>6. 刘大确认服务器电脑。</p>
 </section>
 
-<section id="section-19">
+<section id="section-20">
   <div class="source">来源文件：<code>10_启动材料/逐分钟演示讲稿.md</code></div>
   <h1>逐分钟演示讲稿</h1>
 
@@ -1602,7 +1622,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>第一版先把协作流程跑通，二期再做资源发号、窗口心跳、StartPack 自动生成、Dashboard 审核面板。</p>
 </section>
 
-<section id="section-20">
+<section id="section-21">
   <div class="source">来源文件：<code>10_启动材料/现场答辩问答.md</code></div>
   <h1>现场答辩问答</h1>
 
@@ -1657,7 +1677,7 @@ agent_memory.py handoff --project &quot;AI工作台&quot;</code></pre>
 <p>数据库和服务器属于二期，不算当前第一阶段缺口。</p>
 </section>
 
-<section id="section-21">
+<section id="section-22">
   <div class="source">来源文件：<code>10_启动材料/新窗口演示提示词.md</code></div>
   <h1>新窗口演示提示词</h1>
 
