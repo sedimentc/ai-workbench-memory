@@ -53,83 +53,11 @@
       background: var(--bg);
       border-bottom: 1px solid var(--line);
     }
-    .titlebar {
+    .search-only {
+      padding: 10px 14px;
       display: grid;
-      grid-template-columns: minmax(300px, 1fr) minmax(620px, 1.4fr);
-      gap: 12px;
-      padding: 10px 14px 8px;
-      align-items: center;
-    }
-    .brand {
-      display: grid;
-      grid-template-columns: 28px minmax(0, 1fr);
+      grid-template-columns: minmax(260px, 1fr) 96px;
       gap: 8px;
-      align-items: center;
-    }
-    .badge-red {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: var(--red);
-      color: #fff;
-      font-weight: 800;
-      font-size: 13px;
-    }
-    h1 { margin: 0; font-size: 18px; line-height: 1.2; }
-    .meta {
-      color: var(--muted);
-      font-size: 12px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-top: 2px;
-    }
-    .toolbar {
-      display: grid;
-      grid-template-columns: 120px 160px minmax(220px, 1fr) auto auto auto;
-      gap: 8px;
-      align-items: center;
-    }
-    .checks {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      white-space: nowrap;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .checks input { width: auto; }
-    .wide-action {
-      padding: 0 14px 10px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(320px, .52fr);
-      gap: 12px;
-    }
-    .greenbar {
-      background: var(--green);
-      color: #fff;
-      border-radius: 6px;
-      border: 0;
-      min-height: 36px;
-      font-weight: 800;
-      width: 100%;
-    }
-    .notice {
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
-      color: var(--muted);
-      padding: 9px 12px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .rows {
-      padding: 12px 14px 0;
-      display: grid;
-      gap: 10px;
     }
     .module-map {
       display: grid;
@@ -173,29 +101,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .control-row {
-      display: grid;
-      grid-template-columns: minmax(300px, 1fr) minmax(560px, 1.5fr) minmax(260px, .72fr);
-      gap: 10px;
-      align-items: center;
-    }
-    .row-card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      padding: 10px 12px;
-      min-height: 58px;
-    }
-    .row-title { font-weight: 800; margin-bottom: 2px; }
-    .row-sub { color: var(--muted); font-size: 12px; }
-    .inline-controls {
-      display: grid;
-      grid-template-columns: minmax(160px, 1fr) auto auto auto;
-      gap: 8px;
-      align-items: center;
-    }
-    .search-controls { grid-template-columns: minmax(260px, 1fr) 90px; }
     .small-controls {
       display: flex;
       gap: 7px;
@@ -217,29 +122,6 @@
     .main {
       padding: 12px 14px 18px;
     }
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(180px, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .summary .card {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      padding: 11px 12px;
-      min-height: 76px;
-    }
-    .card-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .card-value { font-size: 18px; font-weight: 850; margin-top: 6px; }
     .tag {
       display: inline-block;
       border-radius: 999px;
@@ -407,9 +289,7 @@
     }
     .empty { color: var(--muted); text-align: center; padding: 28px 10px; }
     @media (max-width: 1200px) {
-      .titlebar, .wide-action, .control-row, .doc-panel { grid-template-columns: 1fr; }
-      .toolbar { grid-template-columns: 1fr 1fr; }
-      .summary { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .doc-panel { grid-template-columns: 1fr; }
       .module-sidebar { position: static; max-height: none; }
       .col { max-height: none; }
       .doc-panel { min-height: 360px; }
@@ -422,49 +302,13 @@
 </head>
 <body>
   <div class="top">
-    <div class="titlebar">
-      <div class="brand">
-        <div class="badge-red">17</div>
-        <div>
-          <h1>工作台记忆面板</h1>
-          <div class="meta" id="top-meta">读取中</div>
-        </div>
-      </div>
-      <div class="toolbar">
-        <select id="project-select"><option>AI工作台</option></select>
-        <select id="module-select"><option>全部模块</option></select>
-        <select id="branch-select"><option>main</option></select>
-        <div class="checks">
-          <label><input id="toggle-b" type="checkbox" checked> 索引</label>
-          <label><input id="toggle-c" type="checkbox" checked> Git</label>
-          <label><input id="toggle-a" type="checkbox"> 受限</label>
-        </div>
-        <button id="refresh-all" class="primary">读取数据</button>
-      </div>
-    </div>
-    <div class="wide-action">
-      <button id="run-handoff" class="greenbar">生成新窗口接手包</button>
-      <div class="notice" id="top-notice">等待读取</div>
-    </div>
-  </div>
-
-  <div class="rows">
-    <div class="control-row">
-      <div class="row-card">
-        <div class="row-title">07_实战索引查询</div>
-        <div class="row-sub">输入页面编号、技能编号、窗口别名、字段名</div>
-      </div>
-      <div class="row-card inline-controls search-controls">
-        <input id="query" value="" placeholder="例如：页面22 / SKILL-001 / 第四级聊天窗口">
-        <button id="resolve-query" class="primary">查询</button>
-      </div>
-      <div class="row-card" id="query-hint">查询结果会显示在 `07_实战索引` 模块列，不再提供固定快捷键。</div>
+    <div class="search-only">
+      <input id="query" value="" placeholder="搜索页面编号、技能编号、窗口别名、字段名">
+      <button id="resolve-query" class="primary">查询</button>
     </div>
   </div>
 
   <main class="main">
-    <section class="summary" id="summary"></section>
-
     <section class="workbench" id="workbench">
       <aside class="module-sidebar">
         <div class="sidebar-title">系统入口</div>
@@ -662,16 +506,18 @@
       const proposals = state.proposals?.proposals?.length || 0;
       const branches = state.git?.branches?.length || 0;
       const pages = state.resources?.pageBadges?.filter((row) => row["编号"]).length || 0;
-      $("#summary").innerHTML = [
-        ["系统状态", check, "自检"],
-        ["Git分支", `${branches} 个`, gitDirty ? `${gitDirty} 个改动` : "干净"],
-        ["导入资料", `${imported} 份`, "08_导入资料"],
-        ["待审核", `${proposals} 条`, "05_待审核"],
-        ["页面编号", `${pages} 个`, "资源登记"],
-        ["当前分支", state.git?.current || "-", "Git"],
-      ].map(([name, value, sub]) => `<div class="card"><div class="card-head"><span>${name}</span><span class="tag">${sub}</span></div><div class="card-value">${value}</div></div>`).join("");
-      $("#top-meta").textContent = `${state.status?.repo || ""} · ${state.git?.current || "-"} · ${state.status?.gitLatest || ""}`;
-      $("#top-notice").textContent = `候选 ${state.candidates?.candidates?.length || 0} · 导入 ${imported} · 待审核 ${proposals} · 工作区 ${gitDirty ? "有改动" : "干净"}`;
+      if ($("#summary")) {
+        $("#summary").innerHTML = [
+          ["系统状态", check, "自检"],
+          ["Git分支", `${branches} 个`, gitDirty ? `${gitDirty} 个改动` : "干净"],
+          ["导入资料", `${imported} 份`, "08_导入资料"],
+          ["待审核", `${proposals} 条`, "05_待审核"],
+          ["页面编号", `${pages} 个`, "资源登记"],
+          ["当前分支", state.git?.current || "-", "Git"],
+        ].map(([name, value, sub]) => `<div class="card"><div class="card-head"><span>${name}</span><span class="tag">${sub}</span></div><div class="card-value">${value}</div></div>`).join("");
+      }
+      if ($("#top-meta")) $("#top-meta").textContent = `${state.status?.repo || ""} · ${state.git?.current || "-"} · ${state.status?.gitLatest || ""}`;
+      if ($("#top-notice")) $("#top-notice").textContent = `候选 ${state.candidates?.candidates?.length || 0} · 导入 ${imported} · 待审核 ${proposals} · 工作区 ${gitDirty ? "有改动" : "干净"}`;
       if ($("#git-line")) $("#git-line").textContent = state.git?.remote || "未配置远端";
     }
     function renderHandoff() {
@@ -732,7 +578,7 @@
       const branches = git.branches.map((row) => item(row.active ? `* ${row.name}` : row.name, row.commit.slice(0, 12), row.message, "", compact)).join("");
       const commits = git.commits.map((row) => item(row.commit, "commit", row.message, "", compact)).join("");
       col.innerHTML = `<div class="item soft"><div class="item-title"><span>Git 主线 / 支线</span><span class="tag ok">${escapeHtml(git.current)}</span></div><div class="item-meta">${escapeHtml(git.remote || "无远端")}</div></div>${mainline}${branchLine}${status}${branches}${commits}`;
-      $("#branch-select").innerHTML = git.branches.map((row) => `<option ${row.active ? "selected" : ""}>${escapeHtml(row.name)}</option>`).join("");
+      if ($("#branch-select")) $("#branch-select").innerHTML = git.branches.map((row) => `<option ${row.active ? "selected" : ""}>${escapeHtml(row.name)}</option>`).join("");
     }
     function renderResources() {
       const res = state.resources;
@@ -793,7 +639,7 @@
       state.startPack = await api("/api/start-pack");
       state.activeModule = "01_项目";
       renderNumberedColumns(); renderActiveModuleData();
-      $("#top-notice").textContent = `接手包已生成 · 读取 ${state.startPack.filesRead.length} 个核心文件 · 显示在右侧工作区`;
+      if ($("#top-notice")) $("#top-notice").textContent = `接手包已生成 · 读取 ${state.startPack.filesRead.length} 个核心文件 · 显示在右侧工作区`;
     }
     async function resolveQuery(value) {
       state.index = await api(`/api/resolve?q=${encodeURIComponent(value)}`);
